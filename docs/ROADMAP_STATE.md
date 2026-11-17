@@ -18,7 +18,7 @@
 | Roadmap started | 2026-11-17 |
 | Phase range | 1.1 → 4.5 (22 phases; 1.6 cache/queue + 1.7 observability added) |
 | Current phase | 4.5 — E2E, Security, Disaster Recovery, Final Deploy ✅ — **TRANSFORMATION COMPLETE** |
-| Git status | **Not a git repository** — `git init` required (see Manual DevOps Checklist) |
+| Git status | ✅ Git repo on `main`, pushed to `https://github.com/ausgreekdev-cpu/RoofDynamics.git` |
 
 ---
 
@@ -891,7 +891,7 @@ git commit -m "chore: add E2E tests, disaster recovery and security hardening"
 
 These cannot be performed by the agent in any phase:
 
-- [ ] `git init` in the repository and push to the remote (repo is currently not a git repo).
+- [x] `git init` in the repository and push to the remote — **done**, branch `main`, remote `origin`.
 - [ ] Provision PostgreSQL 16 with PostGIS extension enabled. **Required before
       `npm --prefix backend run db:migrate` — the local embedded Postgres lacks
       PostGIS, so the phase 1.4 migration could not be applied locally.**
