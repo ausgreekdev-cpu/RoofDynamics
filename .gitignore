@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+**/dist/
+build/
+dev-dist/
+**/dev-dist/
+
+# Environment / secrets (never commit real credentials)
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+netlify/.env
+
+# Local Netlify folder
+.netlify
+
+# Testing / caching
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

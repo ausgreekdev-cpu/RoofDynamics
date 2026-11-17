@@ -1,0 +1,932 @@
+// RoofDynamics Multi-Tenant ERP Database Schema
+// Every model is scoped by tenantId for SaaS multi-tenancy
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionTier {
+  STARTER
+  PRO_SAFETY
+  OPS_ERP
+  EMPIRE_ENTERPRISE_LEASE
+}
+
+enum ModuleKey {
+  CRM_QUOTING
+  WMS_MRP
+  OPERATIONS_HRIS
+  WHS_SAFETY
+  EAM_FLEET
+  ACCOUNTING
+  PUBLIC_WEBSITE
+  AI_SOCIAL_AGENT
+  BI_EXECUTIVE
+  SAAS_SUPER_ADMIN
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUOTING
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum JobStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum InvoiceMilestone {
+  DEPOSIT_10
+  MATERIALS_50
+  COMPLETION_40
+}
+
+enum StockLocation {
+  WELSHPOOL_MAIN_YARD
+  HILUX_UTE_1
+  ISUZU_TRUCK_2
+}
+
+enum TicketType {
+  WHITE_CARD
+  WORKING_AT_HEIGHTS
+  EWP
+  PLUMBING_LICENCE
+  BUILDER_REGISTRATION
+}
+
+enum TicketStatus {
+  VALID
+  EXPIRED
+  PENDING_RENEWAL
+}
+
+enum AssetType {
+  UTE
+  TRAILER
+  EDGE_PROTECTION_RAIL_KIT
+  NAIL_GUN
+  HARNESS
+  OTHER
+}
+
+enum AssetStatus {
+  ACTIVE
+  MAINTENANCE
+  RETIRED
+}
+
+enum InspectionStatus {
+  PASSED
+  FAILED
+  DUE
+  OVERDUE
+}
+
+enum PayRunStatus {
+  DRAFT
+  PROCESSED
+  PAID
+}
+
+enum BASPeriod {
+  Q1
+  Q2
+  Q3
+  Q4
+}
+
+model Tenant {
+  id                   String   @id @default(uuid())
+  name                 String
+  abn                  String?
+  builderRegNumber     String?
+  plumberLicence       String?
+  primaryColour        String   @default("#0EA5E9")
+  subscriptionTier     SubscriptionTier @default(STARTER)
+  monthlyLeaseFee      Decimal  @default(699.00)
+  isWhiteLabel         Boolean  @default(false)
+  logoUrl              String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  users                User[]
+  subscriptions        Subscription[]
+  moduleEntitlements   ModuleEntitlement[]
+  leads                Lead[]
+  quotes               Quote[]
+  jobs                 Job[]
+  bomItems             BOMItem[]
+  stockItems           StockItem[]
+  warehouseLocations   WarehouseLocation[]
+  crewMembers          CrewMember[]
+  crewAssignmentTenant CrewAssignment[] @relation("CrewAssignmentTenant")
+  hrisProfiles         HRISProfile[]
+  tickets              Ticket[]
+  swms                 SWMS[]
+  invoices             Invoice[]
+  gstLedgers           GSTLedger[]
+  basReturns           BASReturn[]
+  tparRecords          TPARRecord[]
+  equipments           Equipment[]
+  harnesses            Harness[]
+  assetInspections     AssetInspection[]
+  rfqs                 RFQ[]
+  purchaseOrders       PurchaseOrder[]
+  auditLogs            AuditLog[]
+  stockReservations    StockReservation[]
+  payRuns              PayRun[]
+  jobPhotos            JobPhoto[]
+  projects             Project[]
+  projectBatches       ProjectBatch[]
+  tasks                Task[]
+  warranties           WarrantyDocument[]
+
+  @@map("tenants")
+}
+
+model Subscription {
+  id                String   @id @default(uuid())
+  tenantId          String
+  tier              SubscriptionTier
+  monthlyFee        Decimal
+  startDate         DateTime
+  endDate           DateTime?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("subscriptions")
+}
+
+model ModuleEntitlement {
+  id           String   @id @default(uuid())
+  tenantId     String
+  moduleKey    ModuleKey
+  isEnabled    Boolean  @default(false)
+  addOnPrice   Decimal  @default(0.00)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, moduleKey])
+  @@index([tenantId])
+  @@map("module_entitlements")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String
+  email        String
+  name         String
+  password     String?
+  role         String   @default("staff")
+  avatarUrl    String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  auditLogs    AuditLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@map("users")
+}
+
+model Lead {
+  id          String   @id @default(uuid())
+  tenantId    String
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String?
+  suburb      String?
+  status      LeadStatus @default(NEW)
+  source      String?
+  estimatedValue Decimal @default(0.00)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  quotes      Quote[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("leads")
+}
+
+model Quote {
+  id                   String   @id @default(uuid())
+  tenantId             String
+  leadId               String?
+  customerName         String
+  customerEmail        String?
+  customerPhone        String?
+  customerAddress      String?
+  customerSuburb       String?
+  planArea             Decimal  @default(0.00)
+  pitchDegrees         Decimal  @default(0.00)
+  wastePercentage      Decimal  @default(7.00)
+  roofHeight           Decimal  @default(0.00)
+  isAsbestosRemoval    Boolean  @default(false)
+  asbestosArea         Decimal  @default(0.00)
+  totalIncGst          Decimal  @default(0.00)
+  totalExGst           Decimal  @default(0.00)
+  gstAmount            Decimal  @default(0.00)
+  status               QuoteStatus @default(DRAFT)
+  coastalZone          Boolean  @default(false)
+  corrosionFlag        Boolean  @default(false)
+  requiresBuilderReg   Boolean  @default(false)
+  requiresPlumbingLic  Boolean  @default(false)
+  requiresSWMS         Boolean  @default(false)
+  compliancePassed     Boolean  @default(false)
+  complianceNotes      String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  acceptedAt           DateTime?
+
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lead                 Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  job                  Job?
+  bomItems             BOMItem[]
+  invoices             Invoice[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([customerSuburb])
+  @@map("quotes")
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  tenantId    String
+  jobId       String?
+  projectId   String?
+  title       String
+  description String?
+  status      String   @default("PENDING")
+  assigneeId  String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([jobId])
+  @@index([status])
+  @@map("tasks")
+}
+
+model WarrantyDocument {
+  id            String   @id @default(uuid())
+  tenantId      String
+  jobId         String?
+  documentType  String   @default("WORKMANSHIP_10YEAR")
+  certificateNo String   @unique
+  customerName  String
+  projectName   String
+  issuedAt      DateTime @default(now())
+  expiresAt     DateTime?
+  pdfUrl        String?
+  serialized    String?
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([certificateNo])
+  @@map("warranty_documents")
+}
+
+model Project {
+  id            String   @id @default(uuid())
+  tenantId      String
+  name          String
+  customerName  String
+  customerEmail String?
+  address       String?
+  suburb        String?
+  state         String   @default("WA")
+  postcode      String?
+  status        String   @default("NEW")
+  coastalZone   Boolean  @default(false)
+  pitchDegrees  Decimal  @default(0)
+  planArea      Decimal  @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("projects")
+}
+
+model ProjectBatch {
+  id            String   @id @default(uuid())
+  tenantId      String
+  fileName      String
+  status        String   @default("PENDING")
+  totalRows     Int      @default(0)
+  processedRows Int      @default(0)
+  failedRows    Int      @default(0)
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rows          ProjectBatchRow[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("project_batches")
+}
+
+model ProjectBatchRow {
+  id        String   @id @default(uuid())
+  batchId   String
+  rowNumber Int
+  data      Json
+  status    String   @default("PENDING")
+  error     String?
+  projectId String?
+  createdAt DateTime @default(now())
+
+  batch     ProjectBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+  @@map("project_batch_rows")
+}
+
+model Job {
+  id            String   @id @default(uuid())
+  tenantId      String
+  quoteId       String   @unique
+  jobNumber     String   @unique
+  status        JobStatus @default(PENDING)
+  scheduledDate DateTime?
+  completedDate DateTime?
+  roofHeight    Decimal  @default(0.00)
+  isAsbestosRemoval Boolean @default(false)
+  asbestosArea  Decimal  @default(0.00)
+  swmsSigned    Boolean  @default(false)
+  edgeProtectionVerified Boolean @default(false)
+  crewLeadId    String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  quote         Quote    @relation(fields: [quoteId], references: [id])
+  crewLead      CrewMember? @relation("CrewLead", fields: [crewLeadId], references: [id])
+  crewAssignmentJob CrewAssignment[] @relation("CrewAssignmentJob")
+  stockReservations StockReservation[]
+  invoices      Invoice[]
+  swms          SWMS?
+  rfqs          RFQ[]
+  photos        JobPhoto[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([quoteId])
+  @@map("jobs")
+}
+
+model BOMItem {
+  id           String   @id @default(uuid())
+  tenantId     String
+  quoteId      String
+  itemType     String
+  itemName     String
+  quantity     Decimal
+  unit         String
+  unitCost     Decimal  @default(0.00)
+  totalCost    Decimal  @default(0.00)
+  isCoastalGrade Boolean @default(false)
+  createdAt    DateTime @default(now())
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  quote        Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([quoteId])
+  @@map("bom_items")
+}
+
+model StockItem {
+  id           String   @id @default(uuid())
+  tenantId     String
+  sku          String
+  name         String
+  description  String?
+  location     StockLocation
+  quantityOnHand Decimal @default(0.00)
+  quantityReserved Decimal @default(0.00)
+  reorderPoint Decimal @default(0.00)
+  unitCost     Decimal  @default(0.00)
+  supplier     String?
+  warehouseLocationId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  warehouseLocation  WarehouseLocation? @relation(fields: [warehouseLocationId], references: [id])
+  reservations       StockReservation[]
+
+  @@index([tenantId])
+  @@index([sku])
+  @@index([location])
+  @@map("stock_items")
+}
+
+model WarehouseLocation {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stockItems StockItem[]
+
+  @@index([tenantId])
+  @@map("warehouse_locations")
+}
+
+model StockReservation {
+  id           String   @id @default(uuid())
+  tenantId     String
+  jobId        String
+  stockItemId  String
+  quantity     Decimal
+  reservedAt   DateTime @default(now())
+  releasedAt   DateTime?
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  stockItem    StockItem @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([jobId])
+  @@index([stockItemId])
+  @@map("stock_reservations")
+}
+
+model CrewMember {
+  id           String   @id @default(uuid())
+  tenantId     String
+  firstName    String
+  lastName     String
+  email        String?
+  phone        String?
+  role         String
+  hireDate     DateTime
+  isActive     Boolean  @default(true)
+  hourlyRate   Decimal  @default(0.00)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  hrisProfile        HRISProfile?
+  crewAssignmentCrewMember CrewAssignment[] @relation("CrewAssignmentCrewMember")
+  tickets              Ticket[]
+  ledJobs              Job[] @relation("CrewLead")
+  equipments           Equipment[]
+  harnesses            Harness[]
+  payRunLines          PayRunLine[]
+
+  @@index([tenantId])
+  @@map("crew_members")
+}
+
+model CrewAssignment {
+  id           String   @id @default(uuid())
+  tenantId     String
+  jobId        String
+  crewMemberId String
+  assignedAt   DateTime @default(now())
+
+  tenant       Tenant   @relation("CrewAssignmentTenant", fields: [tenantId], references: [id], onDelete: Cascade)
+  job          Job      @relation("CrewAssignmentJob", fields: [jobId], references: [id], onDelete: Cascade)
+  crewMember   CrewMember @relation("CrewAssignmentCrewMember", fields: [crewMemberId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([jobId])
+  @@index([crewMemberId])
+  @@map("crew_assignments")
+}
+
+model HRISProfile {
+  id           String   @id @default(uuid())
+  tenantId     String
+  crewMemberId String   @unique
+  whiteCardNumber String?
+  whiteCardExpiry DateTime?
+  workingAtHeightsCert String?
+  workingAtHeightsExpiry DateTime?
+  ewpCert      String?
+  ewpExpiry    DateTime?
+  plumbingLicence String?
+  plumbingLicenceExpiry DateTime?
+  builderReg   String?
+  builderRegExpiry DateTime?
+  kpiRating    Decimal  @default(0.00)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  crewMember   CrewMember @relation(fields: [crewMemberId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("hris_profiles")
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  tenantId    String
+  crewMemberId String
+  ticketType  TicketType
+  ticketNumber String
+  status      TicketStatus @default(VALID)
+  expiryDate  DateTime
+  verifiedAt  DateTime?
+  verifiedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  crewMember  CrewMember @relation(fields: [crewMemberId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([crewMemberId])
+  @@index([ticketType])
+  @@index([status])
+  @@map("tickets")
+}
+
+model SWMS {
+  id           String   @id @default(uuid())
+  tenantId     String
+  jobId        String   @unique
+  title        String
+  roofHeight   Decimal
+  edgeProtectionRequired Boolean @default(false)
+  edgeProtectionVerified Boolean @default(false)
+  fallingFromHeightsSigned Boolean @default(false)
+  signedBy     String?
+  signedAt     DateTime?
+  asbestosRemoval Boolean @default(false)
+  asbestosLicenceNumber String?
+  workSafeNotificationDate DateTime?
+  tipReceiptUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([jobId])
+  @@map("swms")
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  tenantId      String
+  jobId         String?
+  quoteId       String?
+  invoiceNumber String   @unique
+  milestone     InvoiceMilestone?
+  amount        Decimal
+  gstAmount     Decimal  @default(0.00)
+  totalIncGst   Decimal
+  status        InvoiceStatus @default(DRAFT)
+  dueDate       DateTime?
+  paidAt        DateTime?
+  warrantyCertificateUrl String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  job           Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  quote         Quote?   @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  gstLedgers    GSTLedger[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([invoiceNumber])
+  @@map("invoices")
+}
+
+model GSTLedger {
+  id           String   @id @default(uuid())
+  tenantId     String
+  invoiceId    String
+  gstCollected Decimal  @default(0.00)
+  gstPaid      Decimal  @default(0.00)
+  period       BASPeriod
+  year         Int
+  createdAt    DateTime @default(now())
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([period])
+  @@index([year])
+  @@map("gst_ledger")
+}
+
+model BASReturn {
+  id           String   @id @default(uuid())
+  tenantId     String
+  period       BASPeriod
+  year         Int
+  gstCollected Decimal  @default(0.00)
+  gstPaid      Decimal  @default(0.00)
+  netGst       Decimal  @default(0.00)
+  filed        Boolean  @default(false)
+  filedAt      DateTime?
+  createdAt    DateTime @default(now())
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, period, year])
+  @@index([tenantId])
+  @@map("bas_returns")
+}
+
+model TPARRecord {
+  id           String   @id @default(uuid())
+  tenantId     String
+  contractorName String
+  abn          String
+  abnValid     Boolean  @default(false)
+  totalPayments Decimal @default(0.00)
+  financialYear Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([abn])
+  @@index([financialYear])
+  @@map("tpar_records")
+}
+
+model Equipment {
+  id           String   @id @default(uuid())
+  tenantId     String
+  assetType    AssetType
+  name         String
+  serialNumber String?
+  status       AssetStatus @default(ACTIVE)
+  location     StockLocation?
+  assignedToId String?
+  purchaseDate DateTime?
+  cost         Decimal  @default(0.00)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedTo   CrewMember? @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  inspections  AssetInspection[]
+
+  @@index([tenantId])
+  @@index([assetType])
+  @@index([serialNumber])
+  @@map("equipment")
+}
+
+model Harness {
+  id           String   @id @default(uuid())
+  tenantId     String
+  name         String
+  serialNumber String   @unique
+  status       AssetStatus @default(ACTIVE)
+  lastInspectionDate DateTime?
+  nextInspectionDue DateTime?
+  assignedToId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedTo   CrewMember? @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  inspections  AssetInspection[]
+
+  @@index([tenantId])
+  @@index([serialNumber])
+  @@index([nextInspectionDue])
+  @@map("harnesses")
+}
+
+model AssetInspection {
+  id           String   @id @default(uuid())
+  tenantId     String
+  equipmentId  String?
+  harnessId    String?
+  inspectionType String
+  status       InspectionStatus
+  inspectionDate DateTime
+  nextDueDate  DateTime
+  inspectorName String?
+  certificateUrl String?
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  equipment    Equipment? @relation(fields: [equipmentId], references: [id], onDelete: SetNull)
+  harness      Harness?   @relation(fields: [harnessId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([equipmentId])
+  @@index([harnessId])
+  @@index([nextDueDate])
+  @@map("asset_inspections")
+}
+
+model RFQ {
+  id           String   @id @default(uuid())
+  tenantId     String
+  jobId        String?
+  title        String
+  supplierName String
+  supplierContact String?
+  bidAmount    Decimal?
+  leadTimeDays Int?
+  status       String   @default("open")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  job          Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  items        RFQItem[]
+  purchaseOrders PurchaseOrder[]
+
+  @@index([tenantId])
+  @@index([jobId])
+  @@index([status])
+  @@map("rfqs")
+}
+
+model RFQItem {
+  id           String   @id @default(uuid())
+  rfqId        String
+  itemName     String
+  quantity     Decimal
+  unit         String
+  unitPrice    Decimal?
+  totalPrice   Decimal?
+
+  rfq          RFQ      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+
+  @@index([rfqId])
+  @@map("rfq_items")
+}
+
+model PurchaseOrder {
+  id           String   @id @default(uuid())
+  tenantId     String
+  rfqId        String   @unique
+  poNumber     String   @unique
+  supplierName String
+  totalAmount  Decimal
+  status       String   @default("draft")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rfq          RFQ      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([poNumber])
+  @@index([status])
+  @@map("purchase_orders")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  tenantId     String
+  userId       String?
+  action       String
+  entityType   String
+  entityId     String
+  oldValues    String?
+  newValues    String?
+  createdAt    DateTime @default(now())
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model JobPhoto {
+  id        String   @id @default(uuid())
+  tenantId  String
+  jobId     String
+  category  String   @default("before") // before, after
+  fileName  String
+  mimeType  String
+  sizeBytes Int
+  dataUrl   String   @db.Text // base64 encoded image
+  uploadedBy String?
+  createdAt DateTime @default(now())
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([jobId])
+  @@index([category])
+  @@map("job_photos")
+}
+
+model PayRun {
+  id            String   @id @default(uuid())
+  tenantId      String
+  periodStart   DateTime
+  periodEnd     DateTime
+  status        PayRunStatus @default(DRAFT)
+  totalOTE      Decimal  @default(0.00)
+  totalSuper    Decimal  @default(0.00)
+  totalPayg     Decimal  @default(0.00)
+  totalMyLeave  Decimal  @default(0.00)
+  totalNetPay   Decimal  @default(0.00)
+  lineCount     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  processedAt   DateTime?
+  paidAt        DateTime?
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lines         PayRunLine[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([periodStart])
+  @@map("pay_runs")
+}
+
+model PayRunLine {
+  id            String   @id @default(uuid())
+  payRunId      String
+  crewMemberId  String
+  hoursWorked   Decimal
+  hourlyRate    Decimal
+  ote           Decimal
+  superGuarantee Decimal
+  paygWithholding Decimal
+  myLeaveLevy   Decimal
+  netPay        Decimal
+  createdAt     DateTime @default(now())
+
+  payRun        PayRun   @relation(fields: [payRunId], references: [id], onDelete: Cascade)
+  crewMember    CrewMember @relation(fields: [crewMemberId], references: [id], onDelete: Cascade)
+
+  @@index([payRunId])
+  @@index([crewMemberId])
+  @@map("pay_run_lines")
+}

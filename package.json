@@ -1,0 +1,24 @@
+{
+  "name": "roofdynamics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RoofDynamics — Multi-Tenant SaaS & Enterprise ERP for Roofing & Trade Businesses, Perth WA. Powered by AusGreek Developments.",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build && npm --prefix backend run build",
+    "typecheck": "npm --prefix frontend run build && npm --prefix backend run build",
+    "prisma:generate": "npm --prefix backend run prisma:generate",
+    "prisma:migrate": "npm --prefix backend run prisma:migrate",
+    "prisma:seed": "npm --prefix backend run prisma:seed",
+    "test:e2e": "npm --prefix frontend run test:e2e",
+    "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
+  }
+}
