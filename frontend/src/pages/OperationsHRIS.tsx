@@ -63,6 +63,8 @@ export default function OperationsHRIS() {
         lastName: member.lastName,
         hourlyRate: member.hourlyRate,
         hoursWorked: hoursInput[member.id] || 40,
+        // Apprentices are exempt from the WA MyLeave levy (0%)
+        isApprentice: String(member.role || "").toLowerCase().includes("apprentice"),
       }));
 
       const result = await api.calculatePayroll({
@@ -362,7 +364,7 @@ export default function OperationsHRIS() {
                   <p className="text-lg font-bold text-[#F59E0B]">${payrollResult.totals.totalPayg.toLocaleString()}</p>
                 </div>
                 <div className="bg-[#0F172A] p-4 rounded-lg border border-[#334155]">
-                  <p className="text-xs text-[#64748B]">WA MyLeave Levy (2.7%)</p>
+                  <p className="text-xs text-[#64748B]">WA MyLeave Levy (0.75% · apprentices 0%)</p>
                   <p className="text-lg font-bold text-[#F59E0B]">${payrollResult.totals.totalMyLeave.toLocaleString()}</p>
                 </div>
                 <div className="bg-[#0F172A] p-4 rounded-lg border border-[#334155]">

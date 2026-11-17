@@ -916,3 +916,36 @@ These cannot be performed by the agent in any phase:
       and a signed transport contract; live adapters currently fail loudly by
       design.
 - [ ] Configure Netlify environment variables from `.env.example` (phase 1.2).
+
+---
+
+## AGENTS.md Compliance Update (2026-11-17)
+
+Applied the new master spec (AGENTS.md) — critical statutory fixes and features:
+
+### Critical Bug Fixes
+- [x] **MyLeave WA rate**: 2.7% → **0.75%** construction workers, **0% apprentices**
+      (`backend/src/utils/payrollCalculator.ts`). Was over-charging 3.6×.
+- [x] **Darling Scarp high-wind zone** (Kalamunda, Mundaring, Roleystone, Wungong,
+      Armadale): 10 screws/m² (was cyclonic-only).
+- [x] **6.5% residential deposit cap** (Home Building Contracts Act 1991 WA)
+      with mandatory WA Notice for the Home Owner.
+- [x] **LGA Building Permit BA1/BA2** tracking for ≥$20k / structural conversion.
+- [x] **Security of Payment Act 2021** — 15-business-day Payment Schedule countdown.
+
+### BOM Enhancements
+- [x] **AS 3959 BAL-19 / BAL-29** bushfire zones with Ember Guard mesh + Sarking BOM items.
+- [x] **Custom sheet rolling schedule** — cut lengths in mm per roof plane.
+
+### New Files
+- `backend/src/server/routes/compliance.ts` (payment claims + building permits + `addBusinessDays`)
+- `backend/src/utils/payrollCalculator.test.ts`
+- `backend/src/server/routes/compliance.test.ts`
+- `frontend/src/features/compliance/` (ComplianceTracker + page)
+- `frontend/src/pages/Compliance.tsx`
+- Prisma models `PaymentClaim`, `BuildingPermit` + migration `20261117144026_add_payment_claims_permits`
+
+### Verification
+Backend TSC 0 errors; backend tests 89 passed; frontend build pass;
+frontend tests 114 passed; Playwright E2E 4/4; live payment claim (due 2026-12-11)
+and building permit endpoints verified.

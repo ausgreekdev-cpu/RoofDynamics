@@ -30,6 +30,7 @@ const Reports = React.lazy(() => import("./pages/Reports"));
 const Pipeline = React.lazy(() => import("./pages/Pipeline"));
 const Operations = React.lazy(() => import("./pages/Operations"));
 const Billing = React.lazy(() => import("./pages/Billing"));
+const Compliance = React.lazy(() => import("./pages/Compliance"));
 
 const PageLoader = () => (
   <div className="space-y-4">
@@ -87,6 +88,7 @@ function AppRouter() {
           <Route path="/pipeline" element={<ErrorBoundary moduleName="CRM Pipeline"><Pipeline /></ErrorBoundary>} />
           <Route path="/operations" element={<ErrorBoundary moduleName="Operations Dispatch"><Operations /></ErrorBoundary>} />
           <Route path="/billing" element={<ErrorBoundary moduleName="Billing"><Billing /></ErrorBoundary>} />
+          <Route path="/compliance" element={<ErrorBoundary moduleName="Compliance"><Compliance /></ErrorBoundary>} />
             </Routes>
           </Suspense>
         </ErrorBoundary>

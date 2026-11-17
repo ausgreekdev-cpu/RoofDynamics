@@ -295,4 +295,113 @@ describe("waComplianceEngine", () => {
       expect(result.requiredActions).toHaveLength(0);
     });
   });
+
+  describe("Home Building Contracts Act 1991 (WA) — 6.5% Deposit Cap", () => {
+    const base = {
+      quoteTotalIncGst: 100000,
+      jobType: "standard" as const,
+      includesRoofPlumbing: false,
+      roofHeight: 2.0,
+      isAsbestosRemoval: false,
+      asbestosArea: 0,
+      hasBuilderRegNumber: true,
+      hasPlumbingLicence: true,
+      hasSWMS: true,
+      hasEdgeProtection: true,
+      hasAsbestosLicence: false,
+      hasWorkSafeNotification: false,
+      isResidential: true,
+      buildingPermitNumber: "BA1-2026-TEST",
+    };
+
+    it("blocks a residential deposit above 6.5%", () => {
+      const result = evaluateWACompliance({ ...base, depositAmount: 10000 });
+      expect(result.passed).toBe(false);
+      expect(result.blockedReason).toMatch(/6\.5% statutory cap/i);
+      expect(result.requiredActions.join(" ")).toMatch(/WA Notice for the Home Owner/);
+    });
+
+    it("allows a deposit at or below 6.5%", () => {
+      const result = evaluateWACompliance({ ...base, depositAmount: 6500 });
+      expect(result.passed).toBe(true);
+      expect(result.warnings.join(" ")).toMatch(/WA Notice for the Home Owner/);
+    });
+
+    it("does not apply the cap to commercial work", () => {
+      const result = evaluateWACompliance({ ...base, isResidential: false, depositAmount: 20000 });
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  describe("LGA Building Permit BA1/BA2", () => {
+    const base = {
+      quoteTotalIncGst: 25000,
+      jobType: "structural" as const,
+      includesRoofPlumbing: false,
+      roofHeight: 2.0,
+      isAsbestosRemoval: false,
+      asbestosArea: 0,
+      hasBuilderRegNumber: true,
+      hasPlumbingLicence: true,
+      hasSWMS: true,
+      hasEdgeProtection: true,
+      hasAsbestosLicence: false,
+      hasWorkSafeNotification: false,
+    };
+
+    it("requires a building permit for work over $20k", () => {
+      const result = evaluateWACompliance(base);
+      expect(result.passed).toBe(false);
+      expect(result.blockedReason).toMatch(/Building Permit/i);
+    });
+
+    it("passes when a permit number is supplied", () => {
+      const result = evaluateWACompliance({ ...base, buildingPermitNumber: "BA1-2026-001" });
+      expect(result.passed).toBe(true);
+    });
+
+    it("requires a permit for structural conversion even under $20k", () => {
+      const result = evaluateWACompliance({
+        ...base,
+        quoteTotalIncGst: 15000,
+        isStructuralConversion: true,
+      });
+      expect(result.passed).toBe(false);
+    });
+  });
+
+  describe("Security of Payment Act 2021 (WA) — 15 business days", () => {
+    const base = {
+      quoteTotalIncGst: 50000,
+      jobType: "standard" as const,
+      includesRoofPlumbing: false,
+      roofHeight: 1.0,
+      isAsbestosRemoval: false,
+      asbestosArea: 0,
+      hasBuilderRegNumber: true,
+      hasPlumbingLicence: true,
+      hasSWMS: true,
+      hasEdgeProtection: true,
+      hasAsbestosLicence: false,
+      hasWorkSafeNotification: false,
+      buildingPermitNumber: "BA2-2026-TEST",
+    };
+
+    it("warns when the Payment Schedule is due soon", () => {
+      const result = evaluateWACompliance({ ...base, paymentClaimDaysElapsed: 13 });
+      expect(result.passed).toBe(true);
+      expect(result.warnings.join(" ")).toMatch(/Payment Schedule due in 2 business day/);
+    });
+
+    it("blocks when the Payment Schedule is overdue", () => {
+      const result = evaluateWACompliance({ ...base, paymentClaimDaysElapsed: 16 });
+      expect(result.passed).toBe(false);
+      expect(result.requiredActions.join(" ")).toMatch(/Escalate overdue statutory payment claim/);
+    });
+
+    it("passes with ample time remaining", () => {
+      const result = evaluateWACompliance({ ...base, paymentClaimDaysElapsed: 5 });
+      expect(result.passed).toBe(true);
+    });
+  });
 });

@@ -170,6 +170,8 @@ model Tenant {
   projectBatches       ProjectBatch[]
   tasks                Task[]
   warranties           WarrantyDocument[]
+  paymentClaims        PaymentClaim[]
+  buildingPermits      BuildingPermit[]
 
   @@map("tenants")
 }
@@ -290,6 +292,53 @@ model Quote {
   @@index([status])
   @@index([customerSuburb])
   @@map("quotes")
+}
+
+// Security of Payment Act 2021 (WA) — statutory payment claim tracking.
+// A Payment Schedule must be served within 15 business days of the claim.
+model PaymentClaim {
+  id            String    @id @default(uuid())
+  tenantId      String
+  jobId         String?
+  invoiceId     String?
+  claimNumber   String
+  claimantName  String
+  claimAmount   Decimal
+  servedDate    DateTime
+  responseDueDate DateTime // servedDate + 15 business days
+  respondedDate DateTime?
+  status        String    @default("PENDING") // PENDING | RESPONDED | OVERDUE
+  noticeAttached Boolean  @default(false) // WA Notice for Home Owner (residential)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([responseDueDate])
+  @@map("payment_claims")
+}
+
+// LGA Building Permit (BA1 / BA2) tracking for ≥$20k structural work.
+model BuildingPermit {
+  id           String   @id @default(uuid())
+  tenantId     String
+  jobId        String?
+  permitNumber String
+  permitType   String   @default("BA1") // BA1 | BA2
+  lga          String   // Local Government Area
+  issuedDate   DateTime?
+  expiryDate   DateTime?
+  status       String   @default("PENDING") // PENDING | APPROVED | EXPIRED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([permitNumber])
+  @@map("building_permits")
 }
 
 model Task {

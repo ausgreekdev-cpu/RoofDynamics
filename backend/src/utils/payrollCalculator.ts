@@ -28,8 +28,10 @@ const TAX_BRACKETS_2026: TaxBracket[] = [
   { min: 4001, max: Infinity, base: 1239.82, rate: 0.45, threshold: 4000 },
 ];
 
-// WA MyLeave (Construction Portable LSL) levy rate
-const MYLEAVE_LEVY_RATE = 0.027; // 2.7%
+// WA MyLeave (Construction Portable Long Service Leave) levy rate.
+// Per AGENTS.md: 0.75% of ordinary pay for construction workers, 0% for apprentices.
+const MYLEAVE_LEVY_RATE = 0.0075; // 0.75% — construction workers
+const MYLEAVE_APPRENTICE_RATE = 0; // 0% — apprentices exempt
 
 // Super Guarantee rate (2026)
 const SUPER_GUARANTEE_RATE = 0.12; // 12%
@@ -41,6 +43,8 @@ export interface PayrollInput {
   hourlyRate: number;
   hoursWorked: number;
   payFrequency?: 'weekly' | 'fortnightly' | 'monthly';
+  /** Apprentices are exempt from the WA MyLeave levy (0%). */
+  isApprentice?: boolean;
 }
 
 export interface PayrollLineResult {
@@ -101,8 +105,9 @@ export function calculatePayroll(inputs: PayrollInput[]): PayrollResult {
     // PAYG Withholding (weekly tax tables)
     const paygWithholding = calculatePAYG(ote);
 
-    // WA MyLeave Levy = OTE × 2.7%
-    const myLeaveLevy = Math.round(ote * MYLEAVE_LEVY_RATE * 100) / 100;
+    // WA MyLeave Levy = OTE × 0.75% (0% for apprentices)
+    const levyRate = input.isApprentice ? MYLEAVE_APPRENTICE_RATE : MYLEAVE_LEVY_RATE;
+    const myLeaveLevy = Math.round(ote * levyRate * 100) / 100;
 
     // Net Pay = OTE - PAYG (super is employer contribution, not deducted from employee)
     const netPay = Math.round((ote - paygWithholding) * 100) / 100;
@@ -155,4 +160,4 @@ export function calculatePayroll(inputs: PayrollInput[]): PayrollResult {
   return { lines, totals, stpJson };
 }
 
-export { calculatePAYG, SUPER_GUARANTEE_RATE, MYLEAVE_LEVY_RATE };
+export { calculatePAYG, SUPER_GUARANTEE_RATE, MYLEAVE_LEVY_RATE, MYLEAVE_APPRENTICE_RATE };

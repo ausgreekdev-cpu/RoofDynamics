@@ -21,6 +21,7 @@ import {
   Columns3,
   CalendarDays,
   Wallet,
+  Scale,
 } from "lucide-react";
 import { FeatureGate } from "./FeatureGate";
 
@@ -126,6 +127,12 @@ const MODULES = [
     label: "Billing & Credits",
     icon: Wallet,
     path: "/billing",
+  },
+  {
+    key: "WHS_SAFETY",
+    label: "WA Compliance",
+    icon: Scale,
+    path: "/compliance",
   },
 ];
 

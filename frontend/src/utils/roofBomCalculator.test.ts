@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateRoofBOM, isCoastalSuburb, COASTAL_SUBURBS } from "./roofBomCalculator";
+import { calculateRoofBOM, isCoastalSuburb, COASTAL_SUBURBS, DARLING_SCARP_SUBURBS } from "./roofBomCalculator";
 
 describe("roofBomCalculator", () => {
   describe("Pitch Factor", () => {
@@ -116,7 +116,7 @@ describe("roofBomCalculator", () => {
     it("should use stainless 316 fasteners for coastal zone", () => {
       const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, suburb: "Fremantle" });
       const fastenerItem = result.items.find((i) => i.itemType === "fastener");
-      expect(fastenerItem?.itemName).toContain("Stainless 316");
+      expect(fastenerItem?.itemName).toContain("316 Stainless");
       expect(fastenerItem?.isCoastalGrade).toBe(true);
     });
   });
@@ -146,6 +146,72 @@ describe("roofBomCalculator", () => {
       expect(COASTAL_SUBURBS).toContain("Cottesloe");
       expect(COASTAL_SUBURBS).toContain("Hillarys");
       expect(COASTAL_SUBURBS).toContain("Rockingham");
+    });
+  });
+
+  describe("Darling Scarp high-wind zone (10 screws/m²)", () => {
+    it("uses 10 screws/m² for Darling Scarp suburbs", () => {
+      const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, suburb: "Kalamunda" });
+      expect(result.darlingScarp).toBe(true);
+      expect(result.highWindZone).toBe(true);
+      expect(result.fasteners).toBe(Math.ceil(107 * 10));
+    });
+
+    it("uses 7 screws/m² for non-high-wind suburbs", () => {
+      const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, suburb: "Midland" });
+      expect(result.highWindZone).toBe(false);
+      expect(result.fasteners).toBe(Math.ceil(107 * 7));
+    });
+
+    it("exports all 5 Darling Scarp suburbs", () => {
+      expect(DARLING_SCARP_SUBURBS).toHaveLength(5);
+      expect(DARLING_SCARP_SUBURBS).toContain("Kalamunda");
+    });
+  });
+
+  describe("AS 3959 bushfire BAL zones", () => {
+    it("flags BAL-29 for high-risk scarp suburbs", () => {
+      const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, suburb: "Mundaring" });
+      expect(result.bushfireProne).toBe(true);
+      expect(result.balRating).toBe("BAL-29");
+      expect(result.emberGuardRequired).toBe(true);
+      expect(result.sarkingRequired).toBe(true);
+    });
+
+    it("flags BAL-19 for foothill suburbs", () => {
+      const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, suburb: "Armadale" });
+      expect(result.balRating).toBe("BAL-19");
+    });
+
+    it("adds Ember Guard + Sarking BOM items for bushfire zones", () => {
+      const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, suburb: "Kalamunda" });
+      const types = result.items.map((i) => i.itemType);
+      expect(types).toContain("ember_guard");
+      expect(types).toContain("sarking");
+    });
+
+    it("does not add bushfire items for non-prone suburbs", () => {
+      const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, suburb: "Fremantle" });
+      const types = result.items.map((i) => i.itemType);
+      expect(types).not.toContain("ember_guard");
+      expect(result.balRating).toBeNull();
+    });
+  });
+
+  describe("Custom sheet rolling schedule", () => {
+    it("generates 2 plane runs for gable roofs with mm cut lengths", () => {
+      const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, roofType: "gable" });
+      expect(result.sheetRollingSchedule).toHaveLength(2);
+      result.sheetRollingSchedule.forEach((run) => {
+        expect(run.cutLengthMm).toBeGreaterThan(0);
+        expect(run.cutLengthMm % 5).toBe(0); // rounded to nearest 5mm
+        expect(run.sheetsAcross).toBeGreaterThan(0);
+      });
+    });
+
+    it("generates 4 plane runs for hip/valley roofs", () => {
+      const result = calculateRoofBOM({ planArea: 100, pitchDegrees: 0, roofType: "hip_valley" });
+      expect(result.sheetRollingSchedule).toHaveLength(4);
     });
   });
 });

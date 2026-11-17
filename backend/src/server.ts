@@ -72,6 +72,10 @@ app.use('/api', authenticateToken, requireTenant, attachRole)
 import payrollRoutes from './routes/payroll'
 app.use('/api/payroll', payrollRoutes)
 
+// WA statutory compliance (payment claims + building permits)
+import complianceRoutes from './server/routes/compliance'
+app.use('/api/compliance', complianceRoutes)
+
 // Geospatial lookups + rate-limited ping
 import geoRoutes from './server/routes/geo'
 app.use('/api/geo', geoRoutes)
