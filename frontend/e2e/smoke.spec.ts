@@ -48,16 +48,23 @@ test('guided tutorial starts, advances and can be skipped', async ({ page }) => 
   await page.getByRole('button', { name: 'Sign In' }).click()
   await expect(page.getByText(/Executive BI Dashboard/i)).toBeVisible({ timeout: 10000 })
 
-  // Restart the tour deterministically via the Help button.
-  await page.getByRole('button', { name: 'Restart guided tour' }).click()
-  await expect(page.getByRole('dialog')).toBeVisible()
+  // Auto-starts on the first authenticated session.
+  await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
   await expect(page.getByText('Welcome to RoofDynamics')).toBeVisible()
   await expect(page.getByText('Step 1 of 8')).toBeVisible()
 
-  await page.getByRole('button', { name: /Next/ }).click()
+  // Advance through the tour.
+  await page.getByRole('button', { name: 'Next' }).click()
   await expect(page.getByText('One-Man Empire Autopilot')).toBeVisible()
   await expect(page.getByText('Step 2 of 8')).toBeVisible()
 
-  await page.getByText('Skip tour').click()
+  // Skip closes it and persists completion.
+  await page.getByRole('button', { name: 'Skip tour' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
+  expect(await page.evaluate(() => localStorage.getItem('rd_tutorial_completed'))).toBe('true')
+
+  // The Help button restarts the tour on demand.
+  await page.getByRole('button', { name: 'Restart guided tour' }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await expect(page.getByText('Step 1 of 8')).toBeVisible()
 })

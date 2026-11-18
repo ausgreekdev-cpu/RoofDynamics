@@ -964,10 +964,17 @@ auto-starts on the first authenticated session.
 - [x] Help (`?`) button in TopBar restarts the tour on demand.
 - [x] `data-tour` anchors added: Sidebar, Dashboard run-all, CRM new-quote, WMS
       stock table, Pipeline board, Measurement canvas, Report preview, Compliance.
-- [x] Tests: `TutorialContext.test.tsx` (9 unit tests) + E2E tutorial flow test.
+- [x] Tests: `TutorialContext.test.tsx` (10 unit tests) + E2E tutorial flow test.
 
 ### Verification
 Backend TSC 0 errors; frontend build pass; backend tests 89 passed;
-frontend tests **123 passed**; Playwright E2E **5/5**. Committed as `99fa920`
+frontend tests **124 passed**; Playwright E2E **5/5**. Committed as `99fa920`
 (`feat: add in-app guided onboarding tutorial`) and pushed to `origin/main`.
-Redeployed to <https://roofdynamics.netlify.app> (deploy `6afd2352`).
+
+### First-login auto-start fix
+Live-browser verification exposed a race: the auth token is set by `login()`
+*after* `TutorialProvider` mounts on the login screen, so the mount-only token
+check never fired. `TutorialProvider` now consumes `useAuth()` and watches
+`isAuthenticated`, so the tour auto-starts reliably on the login transition.
+Added a unit test for the unauthenticated → authenticated transition and an E2E
+assertion for auto-start. Redeployed to <https://roofdynamics.netlify.app>.

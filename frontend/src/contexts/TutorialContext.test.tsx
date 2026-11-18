@@ -4,6 +4,12 @@ import { MemoryRouter } from "react-router-dom";
 import { TutorialProvider, useTutorial, TUTORIAL_STEPS } from "./TutorialContext";
 import { Tutorial } from "../components/Tutorial";
 
+// Controllable auth state so we can test the login -> auto-start transition.
+const { mockAuth } = vi.hoisted(() => ({ mockAuth: { isAuthenticated: false } }));
+vi.mock("./AuthContext", () => ({
+  useAuth: () => ({ isAuthenticated: mockAuth.isAuthenticated }),
+}));
+
 // The global test setup provides a no-op localStorage mock; give it a real
 // in-memory implementation so persistence behaviour can be verified.
 const store = new Map<string, string>();
@@ -48,6 +54,7 @@ describe("TutorialContext", () => {
   beforeEach(() => {
     store.clear();
     installLocalStorage();
+    mockAuth.isAuthenticated = false;
   });
 
   it("defines 8 guided steps with unique routes and targets", () => {
@@ -110,7 +117,7 @@ describe("TutorialContext", () => {
   });
 
   it("auto-starts on first authenticated session", async () => {
-    localStorage.setItem("rd_token", "demo-token");
+    mockAuth.isAuthenticated = true;
     renderHarness();
     await waitFor(
       () => expect(screen.getByTestId("active").textContent).toBe("true"),
@@ -118,8 +125,26 @@ describe("TutorialContext", () => {
     );
   });
 
+  it("auto-starts after the login transition (mounted unauthenticated)", async () => {
+    mockAuth.isAuthenticated = false;
+    const { rerender } = renderHarness();
+    expect(screen.getByTestId("active").textContent).toBe("false");
+
+    mockAuth.isAuthenticated = true;
+    rerender(
+      <TutorialProvider>
+        <Harness />
+      </TutorialProvider>
+    );
+
+    await waitFor(
+      () => expect(screen.getByTestId("active").textContent).toBe("true"),
+      { timeout: 2000 }
+    );
+  });
+
   it("does not auto-start once the tutorial is completed", async () => {
-    localStorage.setItem("rd_token", "demo-token");
+    mockAuth.isAuthenticated = true;
     localStorage.setItem("rd_tutorial_completed", "true");
     renderHarness();
     await new Promise((r) => setTimeout(r, 900));
@@ -131,10 +156,11 @@ describe("Tutorial overlay", () => {
   beforeEach(() => {
     store.clear();
     installLocalStorage();
+    mockAuth.isAuthenticated = false;
   });
 
   it("renders the spotlight dialog with progress when active", async () => {
-    localStorage.setItem("rd_token", "demo-token");
+    mockAuth.isAuthenticated = true;
     render(
       <MemoryRouter>
         <TutorialProvider>

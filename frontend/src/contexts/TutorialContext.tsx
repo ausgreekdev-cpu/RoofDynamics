@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import type { ReactNode } from "react";
+import { useAuth } from "./AuthContext";
 
 export interface TutorialStep {
   /** Route to navigate to before showing this step. */
@@ -79,6 +80,9 @@ const TutorialContext = createContext<TutorialState | undefined>(undefined);
 const STORAGE_KEY = "rd_tutorial_completed";
 
 export function TutorialProvider({ children }: { children: ReactNode }) {
+  // React to the auth transition (login happens *after* this provider mounts on
+  // the login screen), so the first-login tour auto-starts reliably.
+  const { isAuthenticated } = useAuth();
   const [isActive, setIsActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [hasCompleted, setHasCompleted] = useState(() => {
@@ -88,14 +92,11 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
 
   // Auto-start on first authenticated session (non-blocking, after paint).
   useEffect(() => {
-    if (!hasCompleted && typeof localStorage !== "undefined") {
-      const token = localStorage.getItem("rd_token");
-      if (token) {
-        const timer = setTimeout(() => setIsActive(true), 800);
-        return () => clearTimeout(timer);
-      }
+    if (!hasCompleted && isAuthenticated) {
+      const timer = setTimeout(() => setIsActive(true), 800);
+      return () => clearTimeout(timer);
     }
-  }, [hasCompleted]);
+  }, [hasCompleted, isAuthenticated]);
 
   const start = useCallback(() => {
     setStepIndex(0);
