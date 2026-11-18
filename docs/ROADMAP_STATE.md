@@ -977,4 +977,32 @@ Live-browser verification exposed a race: the auth token is set by `login()`
 check never fired. `TutorialProvider` now consumes `useAuth()` and watches
 `isAuthenticated`, so the tour auto-starts reliably on the login transition.
 Added a unit test for the unauthenticated → authenticated transition and an E2E
-assertion for auto-start. Redeployed to <https://roofdynamics.netlify.app>.
+assertion for auto-start. Tour step 0 no longer navigates (the sidebar exists on
+every route, so deep links are not hijacked), and auto-start is limited to once
+per browser session via `sessionStorage`. Redeployed to
+<https://roofdynamics.netlify.app>.
+
+### Verification
+Backend TSC 0 errors; frontend build pass; backend tests 89 passed;
+frontend tests **127 passed**; Playwright E2E **5/5**.
+
+---
+
+## Protected Page Load Fix (2026-11-18)
+
+Live-browser sweep found all 7 `<RoleGuard>` pages (Projects, Measurement,
+Report Studio, Pipeline, Operations, Billing, Compliance) rendered **blank** on
+direct navigation / refresh.
+
+- [x] Root cause: `AuthProvider` restored `token` and `tenant` from localStorage
+      on reload but not `user`, so `can(undefined, permission)` returned false
+      and `RoleGuard` rendered its default `null`.
+- [x] `login()` now persists `rd_user`; `AuthProvider` initialises `user` from
+      it; `logout()` removes it.
+- [x] E2E assertions now target page `<h1>` elements (sidebar link text had
+      masked the blank pages) and cover a full reload of a protected route.
+- [x] Regression tests: `AuthContext.test.tsx` (3 unit tests).
+
+### Verification
+All 19 live routes (18 app + `/site`) confirmed rendering content. Committed as
+`d3631ca` and redeployed to <https://roofdynamics.netlify.app>.
