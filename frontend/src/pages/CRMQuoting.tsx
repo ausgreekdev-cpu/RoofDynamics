@@ -190,6 +190,7 @@ export default function CRMQuoting() {
           <p className="text-[#94A3B8]">Manage leads, quotes, and interactive BOM estimator</p>
         </div>
         <button
+          data-tour="new-quote"
           onClick={() => setCalcOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-[#0EA5E9] text-[#0F172A] font-bold rounded-lg hover:bg-[#38BDF8] transition"
         >

@@ -16,7 +16,7 @@ export default function Reports() {
               Live PDF preview with white-label branding templates and one-click download.
             </p>
           </div>
-          <ReportPreview />
+          <div data-tour="report-preview"><ReportPreview /></div>
         </div>
       </RoleGuard>
     </FeatureGate>

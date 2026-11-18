@@ -16,7 +16,7 @@ export default function Compliance() {
               Security of Payment Act claims, 15-business-day countdowns and LGA building permits.
             </p>
           </div>
-          <ComplianceTracker />
+          <div data-tour="compliance"><ComplianceTracker /></div>
         </div>
       </RoleGuard>
     </FeatureGate>

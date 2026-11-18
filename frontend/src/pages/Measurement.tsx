@@ -16,7 +16,7 @@ export default function Measurement() {
               Draw roof planes, calculate plan and true area with WA pitch and waste factors.
             </p>
           </div>
-          <VectorEditor />
+          <div data-tour="measurement-canvas"><VectorEditor /></div>
         </div>
       </RoleGuard>
     </FeatureGate>

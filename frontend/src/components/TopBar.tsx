@@ -6,7 +6,8 @@ import { api } from "../services/api";
 import { OfflineIndicator } from "./OfflineIndicator";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useTheme } from "../contexts/ThemeContext";
-import { Sun, Moon } from "lucide-react";
+import { useTutorial } from "../contexts/TutorialContext";
+import { Sun, Moon, HelpCircle } from "lucide-react";
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -56,6 +57,7 @@ const moduleLabels: Record<string, string> = {
 export function TopBar() {
   const { tenant, logout, setTenant, token } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { start: startTutorial } = useTutorial();
   const [tenantMenuOpen, setTenantMenuOpen] = useState(false);
   const [tenants, setTenants] = useState<any[]>([]);
 
@@ -106,6 +108,14 @@ export function TopBar() {
           className="p-1.5 text-[#94A3B8] hover:text-[#F8FAFC] rounded transition"
         >
           {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+        <button
+          onClick={startTutorial}
+          title="Restart guided tour"
+          aria-label="Restart guided tour"
+          className="p-1.5 text-[#94A3B8] hover:text-[#F8FAFC] rounded transition"
+        >
+          <HelpCircle className="w-4 h-4" />
         </button>
         {tenant && (
           <div className="relative group">

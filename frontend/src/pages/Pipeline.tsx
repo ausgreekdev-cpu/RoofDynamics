@@ -16,7 +16,7 @@ export default function Pipeline() {
               Drag deals through stages, forecast revenue and e-sign offers.
             </p>
           </div>
-          <PipelineBoard />
+          <div data-tour="pipeline-board"><PipelineBoard /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FinancingWidget />
             <StormLookup />

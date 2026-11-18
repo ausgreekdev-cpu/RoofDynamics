@@ -39,3 +39,25 @@ test('authenticated modules render', async ({ page }) => {
     await expect(page.getByText(heading, { exact: false }).first()).toBeVisible({ timeout: 10000 })
   }
 })
+
+// Guided onboarding tutorial
+test('guided tutorial starts, advances and can be skipped', async ({ page }) => {
+  await page.goto('/')
+  await page.getByPlaceholder('you@roofing.com.au').fill('admin@perthpremier.com.au')
+  await page.getByPlaceholder('••••••••').fill('Demo1234!')
+  await page.getByRole('button', { name: 'Sign In' }).click()
+  await expect(page.getByText(/Executive BI Dashboard/i)).toBeVisible({ timeout: 10000 })
+
+  // Restart the tour deterministically via the Help button.
+  await page.getByRole('button', { name: 'Restart guided tour' }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await expect(page.getByText('Welcome to RoofDynamics')).toBeVisible()
+  await expect(page.getByText('Step 1 of 8')).toBeVisible()
+
+  await page.getByRole('button', { name: /Next/ }).click()
+  await expect(page.getByText('One-Man Empire Autopilot')).toBeVisible()
+  await expect(page.getByText('Step 2 of 8')).toBeVisible()
+
+  await page.getByText('Skip tour').click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+})

@@ -154,6 +154,7 @@ export function Sidebar() {
 
   return (
     <aside
+      data-tour="sidebar"
       className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0F172A] border-r border-[#1E293B] transform transition-transform duration-300 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       } lg:translate-x-0`}

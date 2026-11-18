@@ -224,6 +224,7 @@ export default function WMSMRP() {
         )}
 
         {/* Stock Table */}
+        <div data-tour="stock-table">
         <DataTable
           data={stockItems}
           columns={stockColumns}
@@ -231,6 +232,7 @@ export default function WMSMRP() {
           pageSize={10}
           emptyMessage="No stock items found"
         />
+        </div>
 
         {/* Add Stock Form */}
         <div className="bg-[#1E293B] border border-[#334155] rounded-xl p-6">

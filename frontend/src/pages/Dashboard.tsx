@@ -167,6 +167,7 @@ export default function Dashboard() {
             Refresh
           </button>
           <button
+            data-tour="run-all"
             onClick={handleRunAll}
             disabled={isRunning}
             className="px-5 py-2 bg-[#0EA5E9] text-[#0F172A] font-bold rounded-lg hover:bg-[#38BDF8] disabled:opacity-50 transition flex items-center gap-2"

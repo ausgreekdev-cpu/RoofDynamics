@@ -8,6 +8,8 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ToastProvider } from "./components/Toast";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { TutorialProvider } from "./contexts/TutorialContext";
+import { Tutorial } from "./components/Tutorial";
 import { SkeletonTable } from "./components/Skeleton";
 
 // Lazy-loaded pages
@@ -104,7 +106,10 @@ export default function App() {
         <ToastProvider>
           <AuthProvider>
             <BrowserRouter>
-              <AppRouter />
+              <TutorialProvider>
+                <AppRouter />
+                <Tutorial />
+              </TutorialProvider>
             </BrowserRouter>
           </AuthProvider>
         </ToastProvider>
