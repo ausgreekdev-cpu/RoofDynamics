@@ -88,8 +88,9 @@ function seedDb(): Db {
       { id: "swms-2", title: "Asbestos removal — Super Six", jobId: "job-3", signed: true, signedBy: "Daniel Rossi", date: "2026-11-01" },
     ],
     invoices: [
-      { id: "inv-1", number: "INV-2026-041", jobId: "job-1", client: "Robert Thompson", amount: 42000, status: "SENT", milestone: "10% deposit" },
-      { id: "inv-2", number: "INV-2026-042", jobId: "job-1", client: "Robert Thompson", amount: 21000, status: "DRAFT", milestone: "50% progress" },
+      { id: "inv-1", invoiceNumber: "INV-2026-041", jobId: "job-1", client: "Robert Thompson", milestone: "DEPOSIT_10", amount: 4200, gstAmount: 381.82, totalIncGst: 4581.82, status: "PAID", dueDate: "2026-11-20" },
+      { id: "inv-2", invoiceNumber: "INV-2026-042", jobId: "job-1", client: "Robert Thompson", milestone: "PROGRESS_50", amount: 21000, gstAmount: 1909.09, totalIncGst: 22909.09, status: "SENT", dueDate: "2026-12-05" },
+      { id: "inv-3", invoiceNumber: "INV-2026-043", jobId: "job-2", client: "Margaret Davis", milestone: "FINAL_40", amount: 12600, gstAmount: 1145.45, totalIncGst: 13745.45, status: "DRAFT", dueDate: "2026-12-20" },
     ],
     gstLedger: [
       { id: "gst-1", date: "2026-11-17", type: "INVOICE", description: "Deposit — Robert Thompson", amount: 4200, gst: 381.82 },
@@ -103,17 +104,17 @@ function seedDb(): Db {
       { id: "tpar-2", supplier: "Stramit Malaga", abn: "21005678900", total: 9200, period: "2026-Q1" },
     ],
     equipment: [
-      { id: "eq-1", name: "Hilux Ute 1", type: "Vehicle", registration: "1ABC234", status: "ACTIVE" },
-      { id: "eq-2", name: "Isuzu Truck 2", type: "Vehicle", registration: "2BCD345", status: "ACTIVE" },
-      { id: "eq-3", name: "Edge protection kit", type: "Safety", registration: "—", status: "ACTIVE" },
+      { id: "eq-1", name: "Hilux Ute 1", assetType: "UTE", serialNumber: "HT-001", status: "ACTIVE", location: "WELSHPOOL_MAIN_YARD", assignedTo: "Nikos Kyriakidis", purchaseDate: "2023-01-15", cost: 45000 },
+      { id: "eq-2", name: "Isuzu Truck 2", assetType: "UTE", serialNumber: "IS-002", status: "ACTIVE", location: "WELSHPOOL_MAIN_YARD", assignedTo: "Daniel Rossi", purchaseDate: "2022-06-10", cost: 68000 },
+      { id: "eq-3", name: "Edge Protection Rail Kit A", assetType: "EDGE_PROTECTION_RAIL_KIT", serialNumber: "EP-001", status: "ACTIVE", location: "HILUX_UTE_1", assignedTo: null, purchaseDate: "2024-03-01", cost: 3500 },
     ],
     harnesses: [
-      { id: "har-1", owner: "Nikos Kyriakidis", serial: "H-8842", lastInspection: "2026-06-01", nextInspection: "2026-12-01", compliant: true },
-      { id: "har-2", owner: "Daniel Rossi", serial: "H-8843", lastInspection: "2026-05-20", nextInspection: "2026-11-20", compliant: true },
+      { id: "har-1", name: "Full Body Harness — Nikos", serialNumber: "HARN-001", status: "ACTIVE", lastInspectionDate: "2026-06-01", nextInspectionDue: "2026-12-01", assignedTo: "Nikos Kyriakidis" },
+      { id: "har-2", name: "Full Body Harness — Daniel", serialNumber: "HARN-002", status: "ACTIVE", lastInspectionDate: "2026-05-20", nextInspectionDue: "2026-11-20", assignedTo: "Daniel Rossi" },
     ],
     inspections: [
-      { id: "insp-1", assetId: "har-2", type: "AS_NZS_1891_4", due: "2026-11-20", status: "DUE" },
-      { id: "insp-2", assetId: "har-1", type: "AS_NZS_1891_4", due: "2026-12-01", status: "UPCOMING" },
+      { id: "insp-1", equipment: { name: "Full Body Harness — Daniel" }, inspectionType: "AS/NZS 1891.4", status: "PASSED", inspectionDate: "2026-05-20", nextDueDate: "2026-11-20", inspectorName: "Steve Nguyen" },
+      { id: "insp-2", equipment: { name: "Full Body Harness — Nikos" }, inspectionType: "AS/NZS 1891.4", status: "PASSED", inspectionDate: "2026-06-01", nextDueDate: "2026-12-01", inspectorName: "Steve Nguyen" },
     ],
     rfqs: [
       { id: "rfq-1", item: "Colorbond Corrugated 3.0m", quantity: 96, status: "OPEN", supplier: "Lysaght", price: 3072 },
