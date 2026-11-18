@@ -37,6 +37,10 @@ const schema = z.object({
   VITE_EMAIL_PROVIDER: z.enum(['mock', 'resend', 'sendgrid']).default('mock'),
   VITE_SMS_PROVIDER: z.enum(['mock', 'twilio']).default('mock'),
   VITE_ENABLE_MOCK_INTEGRATIONS: boolFromString.default(true),
+
+  // Serve the API from the deterministic local sandbox when no backend is
+  // deployed (production demo). Local dev keeps talking to the real API.
+  VITE_USE_SANDBOX_API: boolFromString.default(false),
 })
 
 export type ClientEnv = z.infer<typeof schema>
@@ -60,6 +64,7 @@ function parseEnvironment(): ClientEnv {
     VITE_EMAIL_PROVIDER: meta.VITE_EMAIL_PROVIDER,
     VITE_SMS_PROVIDER: meta.VITE_SMS_PROVIDER,
     VITE_ENABLE_MOCK_INTEGRATIONS: meta.VITE_ENABLE_MOCK_INTEGRATIONS,
+    VITE_USE_SANDBOX_API: meta.VITE_USE_SANDBOX_API,
   }
 
   const result = schema.safeParse(raw)

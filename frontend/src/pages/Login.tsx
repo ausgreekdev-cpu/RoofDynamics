@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { env } from "../env";
 import { Building2, ShieldCheck, HardHat, Truck, CreditCard, Package } from "lucide-react";
 
 export default function Login() {
@@ -19,21 +20,23 @@ export default function Login() {
     setError("");
 
     try {
-      // Try real auth first
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, tenantId: "tenant-1" }),
-      });
+      // In the sandbox deployment there is no backend to call.
+      if (!env.VITE_USE_SANDBOX_API) {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, tenantId: "tenant-1" }),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        login(data.token, data.user, data.tenant);
-        navigate("/dashboard");
-        return;
+        if (response.ok) {
+          const data = await response.json();
+          login(data.token, data.user, data.tenant);
+          navigate("/dashboard");
+          return;
+        }
       }
 
-      // Fallback to demo login
+      // Demo login (also the sandbox path)
       const tenantData = {
         id: "tenant-1",
         name: "Perth Premier Roofing & Plumbing Pty Ltd",

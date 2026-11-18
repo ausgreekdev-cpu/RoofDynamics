@@ -1006,3 +1006,27 @@ direct navigation / refresh.
 ### Verification
 All 19 live routes (18 app + `/site`) confirmed rendering content. Committed as
 `d3631ca` and redeployed to <https://roofdynamics.netlify.app>.
+
+---
+
+## Production API Sandbox (2026-11-18)
+
+The production env pointed at `api.roofdynamics.com.au`, which has no DNS/hosted
+backend, so every data fetch failed and `netlify.toml` contained a placeholder
+proxy redirect.
+
+- [x] `.env.production` now uses `VITE_API_BASE="/api"` and
+      `VITE_USE_SANDBOX_API=true`; AI endpoint follows the AGENTS.md local
+      OpenAI-compatible default (`http://localhost:1234/v1`).
+- [x] `frontend/src/services/sandboxApi.ts` — deterministic, localStorage-backed
+      mock with seeded Perth roofing data across all ~30 collections, generic
+      CRUD, query filtering, dashboard summary and compliance endpoints.
+      Mutations persist to `rd_sandbox_db`.
+- [x] `api.request` delegates to the sandbox when the flag is on; `Login` skips
+      the dead auth call in sandbox mode; placeholder Netlify redirect removed.
+- [x] `VITE_USE_SANDBOX_API` documented in `.env.example` and both READMEs.
+- [x] 6 sandbox unit tests added; E2E strengthened for protected pages.
+
+### Verification
+Backend TSC 0 errors; frontend build pass; backend tests 89 passed;
+frontend tests **133 passed**; Playwright E2E **5/5**.

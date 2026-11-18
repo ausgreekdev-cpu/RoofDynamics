@@ -77,6 +77,10 @@ e2e/smoke.spec.ts         # Playwright smoke tests
   `vite-plugin-pwa`.
 - **Environment:** all `import.meta.env` reads go through `src/env.ts` (Zod).
   See [`../.env.example`](../.env.example).
+- **Production API:** the Netlify demo has no hosted backend. `VITE_USE_SANDBOX_API=true`
+  (in `.env.production`) routes every `api` call through
+  `services/sandboxApi.ts` — seeded data plus localStorage-backed mutations.
+  Keep it `false` locally to exercise the real Express API.
 - **Icons:** Lucide React. **Charts:** Recharts. **PDF:** `@react-pdf/renderer`.
 
 ---

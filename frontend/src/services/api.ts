@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { env } from "../env";
+import { sandboxRequest } from "./sandboxApi";
 
 const API_BASE = env.VITE_API_BASE;
 
@@ -23,6 +24,11 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
+    // Production demo has no hosted backend — serve deterministic local data.
+    if (env.VITE_USE_SANDBOX_API) {
+      return sandboxRequest<T>(endpoint, options, env);
+    }
+
     const token = this.getToken();
     const tenantId = this.getTenantId();
 

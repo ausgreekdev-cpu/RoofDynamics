@@ -218,6 +218,7 @@ files) and fill in values. Key groups:
 | Group | Variables |
 |-------|-----------|
 | Core | `DATABASE_URL`, `JWT_SECRET`, `PORT`, `CLIENT_URL` |
+| Frontend API | `VITE_API_BASE` (`/api`), `VITE_USE_SANDBOX_API` (production demo: `true`) |
 | AI | `AI_LLM_ENDPOINT` (`http://localhost:1234/v1`), `AI_API_KEY` |
 | Supabase | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
 | Cache | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `INNGEST_*` |
@@ -255,7 +256,12 @@ Latest results: **89 backend + 114 frontend unit tests, 4 E2E tests (207 total)
 ## Deployment
 
 - **Frontend:** Netlify builds from `frontend/` (`npm run build`, publish `dist`).
-  `netlify.toml` supplies SPA fallback, security headers and asset caching.
+  `netlify.toml` supplies SPA fallback, security headers and asset caching. The
+  production demo has no hosted backend, so `VITE_USE_SANDBOX_API=true` serves
+  all API calls from a deterministic localStorage-backed sandbox
+  (`frontend/src/services/sandboxApi.ts`) with seeded Perth roofing data; every
+  mutation persists locally. Local development keeps `false` and uses the real
+  Express API.
 - **Backend:** Node/Express server; `Dockerfile`, `docker-compose.yml`, `nginx.conf`
   and `deploy.sh` are provided for VPS/container deployment.
 - **Database:** run `prisma migrate deploy` and `db:migrate` (the latter needs
