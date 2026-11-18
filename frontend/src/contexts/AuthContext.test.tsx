@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { RoleGuard } from "../features/auth/RoleGuard";
+import { env } from "../env";
 
 // Global setup uses a no-op localStorage mock; provide a real in-memory store.
 const store = new Map<string, string>();
@@ -20,11 +21,12 @@ const DEMO_USER = { id: "u1", tenantId: "t1", email: "admin@perthpremier.com.au"
 const DEMO_TENANT = { id: "t1", name: "Perth Premier", subscriptionTier: "EMPIRE_ENTERPRISE_LEASE", moduleEntitlements: [] };
 
 function Probe() {
-  const { user, login, logout, isAuthenticated } = useAuth();
+  const { user, tenant, login, logout, isAuthenticated } = useAuth();
   return (
     <div>
       <span data-testid="email">{user?.email ?? "none"}</span>
       <span data-testid="auth">{String(isAuthenticated)}</span>
+      <span data-testid="modules">{String(tenant?.moduleEntitlements?.length ?? 0)}</span>
       <RoleGuard permission="projects:read">
         <span data-testid="allowed">allowed</span>
       </RoleGuard>
@@ -64,6 +66,22 @@ describe("AuthProvider session restoration", () => {
     store.set("rd_token", "tok");
     renderAuth();
     expect(screen.queryByTestId("allowed")).toBeNull();
+  });
+
+  it("self-heals a legacy sandbox session with a token but no user", () => {
+    const original = env.VITE_USE_SANDBOX_API;
+    env.VITE_USE_SANDBOX_API = true;
+    store.set("rd_token", "tok");
+    store.set("rd_tenant", JSON.stringify({ ...DEMO_TENANT, moduleEntitlements: [] }));
+    try {
+      renderAuth();
+      expect(screen.getByTestId("email").textContent).toBe("admin@perthpremier.com.au");
+      expect(screen.getByTestId("allowed")).toBeTruthy();
+      expect(screen.getByTestId("modules").textContent).not.toBe("0");
+      expect(store.get("rd_user")).toBeTruthy();
+    } finally {
+      env.VITE_USE_SANDBOX_API = original;
+    }
   });
 
   it("persists the user on login and removes it on logout", () => {

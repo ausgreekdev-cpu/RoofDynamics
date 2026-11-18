@@ -155,7 +155,7 @@ export function Sidebar() {
   return (
     <aside
       data-tour="sidebar"
-      className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0F172A] border-r border-[#1E293B] transform transition-transform duration-300 ${
+      className={`fixed inset-y-0 left-0 z-40 w-64 flex flex-col bg-[#0F172A] border-r border-[#1E293B] transform transition-transform duration-300 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       } lg:translate-x-0`}
     >
@@ -175,7 +175,7 @@ export function Sidebar() {
         </button>
       </div>
 
-      <nav className="mt-6 px-3 space-y-1">
+      <nav className="mt-6 px-3 space-y-1 flex-1 overflow-y-auto pb-4">
         {MODULES.map((mod) => (
           <FeatureGate key={mod.path} moduleKey={mod.key}>
             <a
@@ -190,7 +190,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#1E293B]">
+      <div className="mt-auto shrink-0 p-4 border-t border-[#1E293B] bg-[#0F172A]">
         <div className="text-xs text-[#64748B]">RoofDynamics v1.0</div>
         <div className="text-[10px] text-[#546A84] mt-1">
           Powered by AusGreek Developments

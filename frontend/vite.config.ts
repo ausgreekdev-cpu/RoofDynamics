@@ -41,6 +41,10 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Activate new precache manifests immediately so a deploy cannot leave
+        // existing tabs stuck on an old bundle (which breaks protected pages).
+        skipWaiting: true,
+        clientsClaim: true,
         // Three.js 3D viewer chunk exceeds the 2 MiB default precache limit.
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],

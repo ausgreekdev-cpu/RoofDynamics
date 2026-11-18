@@ -1030,3 +1030,28 @@ proxy redirect.
 ### Verification
 Backend TSC 0 errors; frontend build pass; backend tests 89 passed;
 frontend tests **133 passed**; Playwright E2E **5/5**.
+
+---
+
+## Sidebar Menu Fix (2026-11-18)
+
+Users reported that Projects, Aerial Measurement, Report Studio, CRM Pipeline,
+Dispatch & POs, Billing & Credits and WA Compliance "don't work".
+
+- [x] Root cause: the sidebar footer (`RoofDynamics v1.0` / attribution) was
+      `absolute bottom-0` and overlapped the lower half of the 18-item nav.
+      Playwright confirmed it **intercepted pointer events** on those links.
+- [x] Sidebar is now `flex flex-col`; the nav is `flex-1 overflow-y-auto pb-4`
+      and the footer is a static `mt-auto shrink-0` element. All menu items are
+      clickable at any viewport height.
+- [x] Self-healing sessions: in sandbox mode a token without `rd_user` or with
+      empty `moduleEntitlements` is repaired at startup, so legacy sessions
+      (created before those fields were persisted) render protected pages.
+- [x] PWA `skipWaiting`/`clientsClaim` enabled so deploys cannot leave users on
+      a stale cached bundle.
+- [x] New E2E test clicks all 7 previously broken sidebar links; unit test for
+      legacy session repair.
+
+### Verification
+Frontend build pass; frontend tests **134 passed**; Playwright E2E **6/6**
+(including real sidebar navigation).

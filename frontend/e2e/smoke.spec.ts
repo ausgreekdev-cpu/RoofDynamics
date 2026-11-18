@@ -50,6 +50,32 @@ test('authenticated modules render', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Operations Dispatch' }).first()).toBeVisible({ timeout: 10000 })
 })
 
+// Sidebar navigation (real clicks, not page.goto)
+test('sidebar menu items open the protected modules', async ({ page }) => {
+  await page.goto('/')
+  await page.getByPlaceholder('you@roofing.com.au').fill('admin@perthpremier.com.au')
+  await page.getByPlaceholder('••••••••').fill('Demo1234!')
+  await page.getByRole('button', { name: 'Sign In' }).click()
+  await expect(page.getByText(/Executive BI Dashboard/i)).toBeVisible({ timeout: 10000 })
+
+  // Dismiss the auto-started tour so it cannot intercept clicks.
+  await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+  await page.getByRole('button', { name: 'Skip tour' }).click()
+
+  for (const [link, heading] of [
+    ['Projects', 'Projects'],
+    ['Aerial Measurement', 'Aerial Measurement'],
+    ['Report Studio', 'Report Studio'],
+    ['CRM Pipeline', 'CRM Pipeline'],
+    ['Dispatch & POs', 'Operations Dispatch'],
+    ['Billing & Credits', 'Billing & Credits'],
+    ['WA Compliance', 'WA Statutory Compliance'],
+  ] as const) {
+    await page.getByRole('link', { name: link }).click()
+    await expect(page.getByRole('heading', { name: heading, exact: false }).first()).toBeVisible({ timeout: 10000 })
+  }
+})
+
 // Guided onboarding tutorial
 test('guided tutorial starts, advances and can be skipped', async ({ page }) => {
   await page.goto('/')
