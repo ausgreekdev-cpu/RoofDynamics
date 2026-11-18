@@ -29,15 +29,25 @@ test('authenticated modules render', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign In' }).click()
   await expect(page.getByText(/Executive BI Dashboard/i)).toBeVisible({ timeout: 10000 })
 
+  // Assert the page <h1>, not just sidebar link text — a blank RoleGuard page
+  // would otherwise pass because the link itself is visible.
   for (const [path, heading] of [
     ['/crm', 'CRM & Quoting'],
     ['/projects', 'Projects'],
     ['/pipeline', 'CRM Pipeline'],
     ['/billing', 'Billing & Credits'],
+    ['/compliance', 'WA Statutory Compliance'],
+    ['/measurement', 'Aerial Measurement'],
+    ['/reports-studio', 'Report Studio'],
+    ['/operations', 'Operations Dispatch'],
   ] as const) {
     await page.goto(path)
-    await expect(page.getByText(heading, { exact: false }).first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: heading, exact: false }).first()).toBeVisible({ timeout: 10000 })
   }
+
+  // A full reload must restore the session so protected pages still render.
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Operations Dispatch' }).first()).toBeVisible({ timeout: 10000 })
 })
 
 // Guided onboarding tutorial

@@ -78,6 +78,7 @@ interface TutorialState {
 
 const TutorialContext = createContext<TutorialState | undefined>(undefined);
 const STORAGE_KEY = "rd_tutorial_completed";
+const AUTO_START_KEY = "rd_tutorial_autostarted";
 
 export function TutorialProvider({ children }: { children: ReactNode }) {
   // React to the auth transition (login happens *after* this provider mounts on
@@ -90,9 +91,12 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem(STORAGE_KEY) === "true";
   });
 
-  // Auto-start on first authenticated session (non-blocking, after paint).
+  // Auto-start once per browser session so refreshing a deep link does not
+  // repeatedly throw the welcome overlay over the page the user asked for.
   useEffect(() => {
-    if (!hasCompleted && isAuthenticated) {
+    if (!hasCompleted && isAuthenticated && typeof sessionStorage !== "undefined") {
+      if (sessionStorage.getItem(AUTO_START_KEY) === "true") return;
+      sessionStorage.setItem(AUTO_START_KEY, "true");
       const timer = setTimeout(() => setIsActive(true), 800);
       return () => clearTimeout(timer);
     }

@@ -53,6 +53,7 @@ function renderHarness() {
 describe("TutorialContext", () => {
   beforeEach(() => {
     store.clear();
+    sessionStorage.clear();
     installLocalStorage();
     mockAuth.isAuthenticated = false;
   });
@@ -155,6 +156,7 @@ describe("TutorialContext", () => {
 describe("Tutorial overlay", () => {
   beforeEach(() => {
     store.clear();
+    sessionStorage.clear();
     installLocalStorage();
     mockAuth.isAuthenticated = false;
   });

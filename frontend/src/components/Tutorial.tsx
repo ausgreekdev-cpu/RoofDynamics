@@ -16,7 +16,10 @@ export function Tutorial() {
   // Navigate to the step's route, then locate and highlight its target.
   useEffect(() => {
     if (!isActive || !step) return;
-    if (window.location.pathname !== step.route) {
+    // Step 0 spotlights the sidebar, which exists on every route. Never yank a
+    // user away from a deep-linked page just because the tour auto-started;
+    // navigation begins only when they advance past the welcome step.
+    if (stepIndex > 0 && window.location.pathname !== step.route) {
       navigate(step.route);
     }
     // Allow the lazy route to render before measuring.
