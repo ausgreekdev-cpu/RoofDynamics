@@ -949,3 +949,25 @@ Applied the new master spec (AGENTS.md) — critical statutory fixes and feature
 Backend TSC 0 errors; backend tests 89 passed; frontend build pass;
 frontend tests 114 passed; Playwright E2E 4/4; live payment claim (due 2026-12-11)
 and building permit endpoints verified.
+
+---
+
+## In-App Guided Tutorial (2026-11-18)
+
+Shipped an 8-step onboarding walkthrough that spotlights each core module and
+auto-starts on the first authenticated session.
+
+- [x] `frontend/src/contexts/TutorialContext.tsx` — 8-step state machine, first-login
+      auto-start, `rd_tutorial_completed` localStorage persistence.
+- [x] `frontend/src/components/Tutorial.tsx` — spotlight overlay + tooltip card
+      (progress dots, Back/Next/Skip/Done); navigates via React Router `useNavigate`.
+- [x] Help (`?`) button in TopBar restarts the tour on demand.
+- [x] `data-tour` anchors added: Sidebar, Dashboard run-all, CRM new-quote, WMS
+      stock table, Pipeline board, Measurement canvas, Report preview, Compliance.
+- [x] Tests: `TutorialContext.test.tsx` (9 unit tests) + E2E tutorial flow test.
+
+### Verification
+Backend TSC 0 errors; frontend build pass; backend tests 89 passed;
+frontend tests **123 passed**; Playwright E2E **5/5**. Committed as `99fa920`
+(`feat: add in-app guided onboarding tutorial`) and pushed to `origin/main`.
+Redeployed to <https://roofdynamics.netlify.app> (deploy `6afd2352`).
