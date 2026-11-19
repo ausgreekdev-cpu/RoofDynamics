@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { setStatusBarTheme } from "../services/nativeStatusBar";
 
 type Theme = "dark" | "light";
 
@@ -23,6 +24,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("rd_theme", theme);
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.classList.toggle("light-theme", theme === "light");
+    void setStatusBarTheme(theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
