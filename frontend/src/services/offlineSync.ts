@@ -3,6 +3,10 @@
  * IndexedDB-based offline write queue with background sync on reconnect.
  */
 
+import { isNative } from "./nativeBridge";
+import { getNetworkStatus, onNetworkChange } from "./nativeNetwork";
+import { prefGet, prefSet } from "./nativePreferences";
+
 const DB_NAME = "roofdynamics-offline";
 const DB_VERSION = 1;
 const STORE_NAME = "pending-writes";
@@ -34,7 +38,8 @@ class OfflineSyncEngine {
 
   constructor() {
     this.initDB();
-    this.setupEventListeners();
+    void this.setupEventListeners();
+    void this.restoreLastSync();
   }
 
   private async initDB(): Promise<void> {
@@ -67,17 +72,42 @@ class OfflineSyncEngine {
     });
   }
 
-  private setupEventListeners(): void {
-    window.addEventListener("online", () => {
-      this.isOnline = true;
-      this.notifyListeners();
-      this.syncPendingWrites();
-    });
+  private networkUnsubscribe: (() => void) | null = null;
 
-    window.addEventListener("offline", () => {
-      this.isOnline = false;
-      this.notifyListeners();
-    });
+  private async setupEventListeners(): Promise<void> {
+    if (isNative()) {
+      try {
+        const status = await getNetworkStatus();
+        this.isOnline = status.connected;
+        this.notifyListeners();
+      } catch {
+        this.isOnline = navigator.onLine;
+      }
+      this.networkUnsubscribe = onNetworkChange((status) => {
+        this.isOnline = status.connected;
+        this.notifyListeners();
+        if (status.connected) void this.syncPendingWrites();
+      });
+    } else {
+      window.addEventListener("online", () => {
+        this.isOnline = true;
+        this.notifyListeners();
+        this.syncPendingWrites();
+      });
+      window.addEventListener("offline", () => {
+        this.isOnline = false;
+        this.notifyListeners();
+      });
+    }
+  }
+
+  private async restoreLastSync(): Promise<void> {
+    try {
+      const stored = await prefGet("lastSyncAt");
+      if (stored) this.lastSyncAt = stored;
+    } catch {
+      // ignore
+    }
   }
 
   private notifyListeners(): void {
@@ -163,6 +193,7 @@ class OfflineSyncEngine {
           // Remove from queue
           await this.removeWrite(write.id);
           this.lastSyncAt = new Date().toISOString();
+          void prefSet("lastSyncAt", this.lastSyncAt);
         } else {
           // Increment retry count
           await this.incrementRetry(write.id);
