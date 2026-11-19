@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
+import { getCurrentPosition } from "../services/nativeGeo";
 import { calculateRoofBOM, isCoastalSuburb, COASTAL_SUBURBS } from "../utils/roofBomCalculator";
 import { evaluateWACompliance } from "../utils/waComplianceEngine";
 import { FeatureGate } from "../components/FeatureGate";
@@ -375,13 +376,27 @@ export default function CRMQuoting() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#94A3B8] mb-1">Suburb</label>
-                  <input
-                    type="text"
-                    value={suburb}
-                    onChange={(e) => setSuburb(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]"
-                    placeholder="e.g. Fremantle"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={suburb}
+                      onChange={(e) => setSuburb(e.target.value)}
+                      className="flex-1 px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]"
+                      placeholder="e.g. Fremantle"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const pos = await getCurrentPosition();
+                        if (!pos) { toast.showToast("warning", "Location unavailable"); return; }
+                        toast.showToast("success", `GPS ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)} (accuracy ${Math.round(pos.accuracy)}m)`);
+                      }}
+                      className="px-3 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#94A3B8] hover:text-[#F8FAFC] text-xs"
+                      title="Capture GPS for this site"
+                    >
+                      📍
+                    </button>
+                  </div>
                   {suburb && isCoastalSuburb(suburb) && (
                     <div className="mt-2 p-2 rounded bg-[#7F1D1D]/20 border border-[#7F1D1D]/30 text-[11px] text-[#FCA5A5]">
                       ⚠ Severe Marine Zone (&lt;1km from surf) — AS/NZS 2728 coastal corrosion upgrade

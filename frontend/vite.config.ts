@@ -94,4 +94,22 @@ export default defineConfig({
       },
     },
   },
+  // Capacitor is an optional, Android-only dependency. Keep its imports out of
+  // the web bundle so the browser build succeeds without installing it.
+  build: {
+    rolldownOptions: {
+      external: [
+        "@capacitor/core", "@capacitor/camera", "@capacitor/geolocation",
+        "@capacitor/filesystem", "@capacitor/network", "@capacitor/preferences",
+        "@capacitor/haptics", "@capacitor/splash-screen", "@capacitor/status-bar",
+      ],
+    },
+    rollupOptions: {
+      external: [
+        "@capacitor/core", "@capacitor/camera", "@capacitor/geolocation",
+        "@capacitor/filesystem", "@capacitor/network", "@capacitor/preferences",
+        "@capacitor/haptics", "@capacitor/splash-screen", "@capacitor/status-bar",
+      ],
+    },
+  },
 });

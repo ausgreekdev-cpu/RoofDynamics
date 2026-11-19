@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { Camera, Upload, Trash2, ImageIcon, X } from "lucide-react";
 import { api } from "../services/api";
 import { useToast } from "./Toast";
+import { capturePhoto } from "../services/nativeCamera";
+import { isNative } from "../services/nativeBridge";
 
 interface PhotoUploaderProps {
   jobId: string;
@@ -47,6 +49,17 @@ export function PhotoUploader({ jobId, category, onUploaded }: PhotoUploaderProp
     reader.readAsDataURL(file);
   };
 
+  const handleCapture = async () => {
+    const photo = await capturePhoto();
+    if (!photo) {
+      toast.showToast("warning", "No photo captured");
+      return;
+    }
+    const mime = photo.dataUrl.split(";")[0].replace("data:", "") || "image/jpeg";
+    const ext = mime.includes("png") ? "png" : "jpg";
+    setPreview({ url: photo.dataUrl, name: `${category}-${Date.now()}.${ext}` });
+  };
+
   const handleUpload = async () => {
     if (!preview) return;
     try {
@@ -86,11 +99,21 @@ export function PhotoUploader({ jobId, category, onUploaded }: PhotoUploaderProp
       </div>
 
       {/* Upload area */}
-      <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-[#334155] rounded-lg cursor-pointer hover:border-[#0EA5E9] transition bg-[#0F172A]/50">
-        <Upload className="w-5 h-5 text-[#64748B]" />
-        <span className="text-xs text-[#94A3B8]">Click to select image (max 5MB)</span>
-        <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
-      </label>
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={handleCapture}
+          className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-[#334155] rounded-lg cursor-pointer hover:border-[#0EA5E9] transition bg-[#0F172A]/50 text-[#94A3B8] hover:text-[#F8FAFC]"
+        >
+          <Camera className="w-4 h-4" />
+          <span className="text-xs">{isNative() ? "Take photo with camera" : "Capture / choose image"}</span>
+        </button>
+        <label className="flex items-center justify-center gap-2 p-2 border border-[#334155] rounded-lg cursor-pointer hover:border-[#0EA5E9] transition bg-[#0F172A]/50 text-[#94A3B8] hover:text-[#F8FAFC]">
+          <Upload className="w-4 h-4" />
+          <span className="text-xs">Choose from gallery / files</span>
+          <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+        </label>
+      </div>
 
       {/* Preview before upload */}
       {preview && (
