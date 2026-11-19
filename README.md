@@ -269,6 +269,30 @@ Latest results: **89 backend + 114 frontend unit tests, 4 E2E tests (207 total)
 
 See [docs/DISASTER_RECOVERY.md](docs/DISASTER_RECOVERY.md) for backups and PITR.
 
+## Companion app (Android, Google Play)
+
+`frontend/` ships a Capacitor Android project (`frontend/android/`) wrapping the
+PWA for field crews. Native features: camera (roof/SWMS photos), GPS tagging,
+offline sync via Filesystem + Preferences. Package ID `com.ausgreek.roofdynamics`,
+target SDK 35, min SDK 26, 64-bit only.
+
+```bash
+cd frontend
+npm install
+npm run build
+npm run cap:add:android   # one-time
+npm run cap:sync
+npm run cap:open          # Android Studio
+# release AAB:
+export ROOFDYNAMICS_KEYSTORE_PATH=... ROOFDYNAMICS_KEYSTORE_PASSWORD=... \
+       ROOFDYNAMICS_KEY_ALIAS=roofdynamics ROOFDYNAMICS_KEY_PASSWORD=...
+cd android && ./gradlew bundleRelease
+```
+
+See [docs/GOOGLE_PLAY_RELEASE.md](docs/GOOGLE_PLAY_RELEASE.md) for the full
+Play Console checklist and CI secrets. Store listing copy and privacy policy:
+[`store/`](store/), [`PRIVACY.md`](PRIVACY.md).
+
 ---
 
 ## Documentation

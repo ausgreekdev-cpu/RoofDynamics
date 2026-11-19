@@ -1,0 +1,14 @@
+RoofDynamics Field is the on-site companion for trade-qualified roofing and plumbing crews in Perth, Western Australia.
+
+Built for the roof, not the office:
+- Digital SWMS with one-tap sign-off for work above 2.0 m
+- Photo capture for before/after roof condition and hazard evidence
+- Geo-tagged leads and quotes with GPS
+- Offline-first: every form works without signal and syncs on reconnect
+- Live stock levels across yard, ute and truck
+- Aerial measurement with pitch, waste and sheet cut-length math
+- WA compliance: Security of Payment 15-business-day countdown, BA1/BA2 permits, MyLeave WA
+
+RoofDynamics Field is part of the RoofDynamics platform by AusGreek Developments. Sign in with your RoofDynamics account to sync data. Demo mode works offline with no account.
+
+Privacy: photos and location are only captured when you explicitly use those features, and are stored against your job records. See the privacy policy for details.
