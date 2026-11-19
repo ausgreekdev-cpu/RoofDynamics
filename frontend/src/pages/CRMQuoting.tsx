@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 import { getCurrentPosition } from "../services/nativeGeo";
+import { hapticNotification } from "../services/nativeHaptics";
 import { calculateRoofBOM, isCoastalSuburb, COASTAL_SUBURBS } from "../utils/roofBomCalculator";
 import { evaluateWACompliance } from "../utils/waComplianceEngine";
 import { FeatureGate } from "../components/FeatureGate";
@@ -388,7 +389,8 @@ export default function CRMQuoting() {
                       type="button"
                       onClick={async () => {
                         const pos = await getCurrentPosition();
-                        if (!pos) { toast.showToast("warning", "Location unavailable"); return; }
+                        if (!pos) { await hapticNotification("warning"); toast.showToast("warning", "Location unavailable"); return; }
+                        await hapticNotification("success");
                         toast.showToast("success", `GPS ${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)} (accuracy ${Math.round(pos.accuracy)}m)`);
                       }}
                       className="px-3 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#94A3B8] hover:text-[#F8FAFC] text-xs"

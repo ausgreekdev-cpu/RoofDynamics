@@ -6,6 +6,7 @@ import { api } from "../services/api";
 import { useToast } from "./Toast";
 import { capturePhoto } from "../services/nativeCamera";
 import { isNative } from "../services/nativeBridge";
+import { haptic, hapticNotification } from "../services/nativeHaptics";
 
 interface PhotoUploaderProps {
   jobId: string;
@@ -50,14 +51,17 @@ export function PhotoUploader({ jobId, category, onUploaded }: PhotoUploaderProp
   };
 
   const handleCapture = async () => {
+    await haptic("medium");
     const photo = await capturePhoto();
     if (!photo) {
+      await hapticNotification("warning");
       toast.showToast("warning", "No photo captured");
       return;
     }
     const mime = photo.dataUrl.split(";")[0].replace("data:", "") || "image/jpeg";
     const ext = mime.includes("png") ? "png" : "jpg";
     setPreview({ url: photo.dataUrl, name: `${category}-${Date.now()}.${ext}` });
+    await hapticNotification("success");
   };
 
   const handleUpload = async () => {
