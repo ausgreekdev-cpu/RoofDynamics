@@ -22,6 +22,7 @@ import {
   CalendarDays,
   Wallet,
   Scale,
+  HelpCircle,
 } from "lucide-react";
 import { FeatureGate } from "./FeatureGate";
 
@@ -190,6 +191,15 @@ export function Sidebar() {
         ))}
       </nav>
 
+      <div className="px-3 pb-2">
+        <a
+          href="/help"
+          className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition text-[#94A3B8] hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+        >
+          <HelpCircle className="w-4 h-4" />
+          Help &amp; Docs
+        </a>
+      </div>
       <div className="mt-auto shrink-0 p-4 border-t border-[#1E293B] bg-[#0F172A]">
         <div className="text-xs text-[#64748B]">RoofDynamics v1.0</div>
         <div className="text-[10px] text-[#546A84] mt-1">
