@@ -75,13 +75,14 @@ interface FeatureGateProps {
 }
 
 export function FeatureGate({ moduleKey, children, fallback }: FeatureGateProps) {
-  const { tenant } = useAuth();
+  const { tenant, user } = useAuth();
+  const isDeveloper = user?.role === "developer";
   const [upsellOpen, setUpsellOpen] = useState(false);
 
   const entitlement = tenant?.moduleEntitlements?.find(
     (e: any) => e.moduleKey === moduleKey
   );
-  const isEnabled = entitlement?.isEnabled ?? false;
+  const isEnabled = isDeveloper || (entitlement?.isEnabled ?? false);
 
   const handleUnlock = async () => {
     try {

@@ -1,5 +1,5 @@
 /** Typed auth contract — allows Supabase and local-JWT adapters (Guardrail #3). */
-export type Role = 'owner' | 'admin' | 'manager' | 'staff' | 'crew' | 'viewer'
+export type Role = 'developer' | 'owner' | 'admin' | 'manager' | 'staff' | 'crew' | 'viewer'
 
 export type Permission =
   | 'projects:read'
@@ -17,6 +17,7 @@ export type Permission =
   | 'billing:manage'
   | 'saas:read'
   | 'saas:admin'
+  | 'dev:tools'
 
 export interface AuthSession {
   accessToken: string

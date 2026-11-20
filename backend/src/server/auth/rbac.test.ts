@@ -28,10 +28,11 @@ describe('RBAC matrix', () => {
     expect(normalizeRole('wizard')).toBe('staff')
     expect(normalizeRole('OWNER')).toBe('staff')
     expect(normalizeRole('manager')).toBe('manager')
+    expect(normalizeRole('developer')).toBe('developer')
   })
 
-  it('defines exactly 6 roles', () => {
-    expect(Object.keys(ROLE_PERMISSIONS)).toHaveLength(6)
+  it('defines exactly 7 roles', () => {
+    expect(Object.keys(ROLE_PERMISSIONS)).toHaveLength(7)
   })
 })
 

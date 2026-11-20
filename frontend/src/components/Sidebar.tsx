@@ -23,6 +23,7 @@ import {
   Wallet,
   Scale,
   HelpCircle,
+  Code2,
 } from "lucide-react";
 import { FeatureGate } from "./FeatureGate";
 
@@ -138,7 +139,7 @@ const MODULES = [
 ];
 
 export function Sidebar() {
-  const { tenant } = useAuth();
+  const { tenant, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const entitlements = tenant?.moduleEntitlements || [];
 
@@ -191,7 +192,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-3 pb-2">
+      <div className="px-3 pb-2 space-y-1">
         <a
           href="/help"
           className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition text-[#94A3B8] hover:bg-[#1E293B] hover:text-[#F8FAFC]"
@@ -199,6 +200,15 @@ export function Sidebar() {
           <HelpCircle className="w-4 h-4" />
           Help &amp; Docs
         </a>
+        {user?.role === "developer" && (
+          <a
+            href="/dev-tools"
+            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition text-[#F59E0B] hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+          >
+            <Code2 className="w-4 h-4" />
+            Developer Tools
+          </a>
+        )}
       </div>
       <div className="mt-auto shrink-0 p-4 border-t border-[#1E293B] bg-[#0F172A]">
         <div className="text-xs text-[#64748B]">RoofDynamics v1.0</div>

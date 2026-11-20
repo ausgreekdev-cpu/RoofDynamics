@@ -2,6 +2,12 @@
 import type { Permission, Role } from './types'
 
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
+  developer: [
+    'projects:read', 'projects:write', 'measurement:read', 'measurement:write',
+    'reports:read', 'reports:export', 'crm:read', 'crm:manage', 'whs:sign',
+    'fleet:manage', 'operations:manage', 'billing:read', 'billing:manage',
+    'saas:read', 'saas:admin', 'dev:tools',
+  ],
   owner: [
     'projects:read', 'projects:write', 'measurement:read', 'measurement:write',
     'reports:read', 'reports:export', 'crm:read', 'crm:manage', 'whs:sign',

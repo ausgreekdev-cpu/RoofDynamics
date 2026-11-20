@@ -1,5 +1,5 @@
 /** Server-side RBAC matrix — authoritative. Mirrored in frontend/src/features/auth/rbac.ts. */
-export type Role = 'owner' | 'admin' | 'manager' | 'staff' | 'crew' | 'viewer'
+export type Role = 'developer' | 'owner' | 'admin' | 'manager' | 'staff' | 'crew' | 'viewer'
 
 export type Permission =
   | 'projects:read' | 'projects:write'
@@ -9,8 +9,12 @@ export type Permission =
   | 'whs:sign' | 'fleet:manage' | 'operations:manage'
   | 'billing:read' | 'billing:manage'
   | 'saas:read' | 'saas:admin'
-
+  | 'dev:tools'
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
+  developer: ['projects:read', 'projects:write', 'measurement:read', 'measurement:write',
+    'reports:read', 'reports:export', 'crm:read', 'crm:manage', 'whs:sign',
+    'fleet:manage', 'operations:manage', 'billing:read', 'billing:manage',
+    'saas:read', 'saas:admin', 'dev:tools'],
   owner: ['projects:read', 'projects:write', 'measurement:read', 'measurement:write',
     'reports:read', 'reports:export', 'crm:read', 'crm:manage', 'whs:sign',
     'fleet:manage', 'operations:manage', 'billing:read', 'billing:manage', 'saas:read', 'saas:admin'],
@@ -33,6 +37,6 @@ export function can(role: string | undefined, permission: Permission): boolean {
 
 export function normalizeRole(raw: unknown): Role {
   const value = String(raw ?? 'staff')
-  const valid: Role[] = ['owner', 'admin', 'manager', 'staff', 'crew', 'viewer']
+  const valid: Role[] = ['developer', 'owner', 'admin', 'manager', 'staff', 'crew', 'viewer']
   return (valid.includes(value as Role) ? value : 'staff') as Role
 }

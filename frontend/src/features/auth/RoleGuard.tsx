@@ -19,6 +19,9 @@ export function RoleGuard({ children, roles, permission, fallback = null }: Role
   const { user } = useAuth()
   const role = user?.role
 
+  // Developers have platform-wide access.
+  if (role === "developer") return <>{children}</>
+
   const roleOk = !roles || hasRole(role, roles)
   const permissionOk = !permission || can(role, permission)
 

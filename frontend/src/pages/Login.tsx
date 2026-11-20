@@ -55,12 +55,22 @@ export default function Login() {
         ],
       };
 
+      const deriveRole = (e: string): string => {
+        const lower = e.toLowerCase();
+        if (lower.includes("dev@") || lower.endsWith("@ausgreekdev.com") || lower.includes("developer")) return "developer";
+        if (lower.includes("admin@") || lower.includes("owner@")) return "admin";
+        if (lower.includes("manager@")) return "manager";
+        if (lower.includes("crew@")) return "crew";
+        if (lower.includes("viewer@")) return "viewer";
+        return "staff";
+      };
+
       const userData = {
         id: "user-1",
         tenantId: "tenant-1",
         email,
         name: "Demo User",
-        role: "admin",
+        role: deriveRole(email),
       };
 
       const token = "demo-token-" + Date.now();

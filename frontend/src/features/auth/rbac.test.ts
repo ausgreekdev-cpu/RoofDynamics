@@ -4,7 +4,7 @@ import { can, hasRole, ROLE_PERMISSIONS } from './rbac'
 describe('client RBAC', () => {
   it('uses the same role set as the server', () => {
     expect(Object.keys(ROLE_PERMISSIONS)).toEqual([
-      'owner', 'admin', 'manager', 'staff', 'crew', 'viewer',
+      'developer', 'owner', 'admin', 'manager', 'staff', 'crew', 'viewer',
     ])
   })
 
