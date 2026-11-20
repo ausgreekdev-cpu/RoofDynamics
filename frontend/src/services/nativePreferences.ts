@@ -1,4 +1,4 @@
-import { isNative } from "./nativeBridge";
+import { isNative, dynamicImport } from "./nativeBridge";
 
 const PREFIX = "rd_";
 
@@ -6,7 +6,7 @@ export async function prefGet(key: string): Promise<string | null> {
   if (isNative()) {
     try {
       // @ts-ignore - Capacitor is an optional dependency
-      const { Preferences } = await import("@capacitor/preferences");
+      const { Preferences } = await dynamicImport("@capacitor/preferences");
       const { value } = await Preferences.get({ key: PREFIX + key });
       return value ?? null;
     } catch {
@@ -24,7 +24,7 @@ export async function prefSet(key: string, value: string): Promise<void> {
   if (isNative()) {
     try {
       // @ts-ignore - Capacitor is an optional dependency
-      const { Preferences } = await import("@capacitor/preferences");
+      const { Preferences } = await dynamicImport("@capacitor/preferences");
       await Preferences.set({ key: PREFIX + key, value });
       return;
     } catch {
@@ -42,7 +42,7 @@ export async function prefRemove(key: string): Promise<void> {
   if (isNative()) {
     try {
       // @ts-ignore - Capacitor is an optional dependency
-      const { Preferences } = await import("@capacitor/preferences");
+      const { Preferences } = await dynamicImport("@capacitor/preferences");
       await Preferences.remove({ key: PREFIX + key });
       return;
     } catch {

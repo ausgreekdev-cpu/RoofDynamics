@@ -1,4 +1,4 @@
-import { isNative } from "./nativeBridge";
+import { isNative, dynamicImport } from "./nativeBridge";
 
 export interface CapturedPhoto {
   dataUrl: string;
@@ -15,7 +15,7 @@ export async function capturePhoto(): Promise<CapturedPhoto | null> {
   if (isNative()) {
     try {
       // @ts-ignore - Capacitor is an optional dependency (installed for Android builds)
-      const { Camera, CameraResultType, CameraSource } = await import("@capacitor/camera");
+      const { Camera, CameraResultType, CameraSource } = await dynamicImport("@capacitor/camera");
       const photo = await Camera.getPhoto({
         quality: 85,
         allowEditing: false,

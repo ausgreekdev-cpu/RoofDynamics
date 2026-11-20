@@ -1,4 +1,4 @@
-import { isNative } from "./nativeBridge";
+import { isNative, dynamicImport } from "./nativeBridge";
 
 /**
  * Sync the native Android status bar with the active app theme.
@@ -8,7 +8,7 @@ export async function setStatusBarTheme(theme: "dark" | "light"): Promise<void> 
   if (!isNative()) return;
   try {
     // @ts-ignore - Capacitor is an optional dependency
-    const { StatusBar, Style } = await import("@capacitor/status-bar");
+    const { StatusBar, Style } = await dynamicImport("@capacitor/status-bar");
     if (theme === "dark") {
       await StatusBar.setStyle({ style: Style.Dark });
       await StatusBar.setBackgroundColor({ color: "#0F172A" });

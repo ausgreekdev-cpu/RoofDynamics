@@ -20,12 +20,21 @@ export const platform = (): "web" | "android" | "ios" => {
 export async function loadPlugin<T = any>(name: string): Promise<T | null> {
   if (!isNative()) return null;
   try {
-    // @ts-ignore - Capacitor is an optional dependency (installed for Android builds)
-    const mod = await import(/* @vite-ignore */ `@capacitor/${name}`);
+    const mod = await dynamicImport(`@capacitor/${name}`);
     return (mod as any)[capitalize(name)] ?? null;
   } catch {
     return null;
   }
+}
+
+/**
+ * Runtime-only dynamic import. Using `new Function` prevents Vite/Rolldown
+ * from statically resolving the module at build time, which would fail when
+ * Capacitor is not installed (web builds).
+ */
+export async function dynamicImport(spec: string): Promise<any> {
+  // eslint-disable-next-line no-new-func
+  return new Function("m", "return import(m)")(spec);
 }
 
 function capitalize(s: string) {

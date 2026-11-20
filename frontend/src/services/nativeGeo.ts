@@ -1,4 +1,4 @@
-import { isNative } from "./nativeBridge";
+import { isNative, dynamicImport } from "./nativeBridge";
 
 export interface GeoPosition {
   latitude: number;
@@ -11,7 +11,7 @@ export async function getCurrentPosition(): Promise<GeoPosition | null> {
   if (isNative()) {
     try {
       // @ts-ignore - Capacitor is an optional dependency (installed for Android builds)
-      const { Geolocation } = await import("@capacitor/geolocation");
+      const { Geolocation } = await dynamicImport("@capacitor/geolocation");
       const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
       return {
         latitude: pos.coords.latitude,

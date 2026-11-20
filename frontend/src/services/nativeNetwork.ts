@@ -1,4 +1,4 @@
-import { isNative } from "./nativeBridge";
+import { isNative, dynamicImport } from "./nativeBridge";
 
 export interface NetworkStatus {
   connected: boolean;
@@ -9,7 +9,7 @@ export async function getNetworkStatus(): Promise<NetworkStatus> {
   if (isNative()) {
     try {
       // @ts-ignore - Capacitor is an optional dependency
-      const { Network } = await import("@capacitor/network");
+      const { Network } = await dynamicImport("@capacitor/network");
       const s = await Network.getStatus();
       return { connected: s.connected, connectionType: s.connectionType };
     } catch {
@@ -25,7 +25,7 @@ export function onNetworkChange(callback: (status: NetworkStatus) => void): () =
     (async () => {
       try {
         // @ts-ignore - Capacitor is an optional dependency
-        const { Network } = await import("@capacitor/network");
+        const { Network } = await dynamicImport("@capacitor/network");
         handle = await Network.addListener("networkStatusChange", (s: any) => {
           callback({ connected: s.connected, connectionType: s.connectionType });
         });
