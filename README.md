@@ -300,6 +300,7 @@ Play Console checklist and CI secrets. Store listing copy and privacy policy:
 | File | Contents |
 |------|----------|
 | [docs/ROADMAP_STATE.md](docs/ROADMAP_STATE.md) | 22-phase checklist, stack lockdown, per-phase file logs & commit history |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | How to use every feature (modules, agents, exports, companion app) |
 | [docs/DISASTER_RECOVERY.md](docs/DISASTER_RECOVERY.md) | Backup policy, restore runbook, failure scenarios |
 | [frontend/README.md](frontend/README.md) | Frontend workspace guide |
 | [backend/README.md](backend/README.md) | Backend workspace guide |
