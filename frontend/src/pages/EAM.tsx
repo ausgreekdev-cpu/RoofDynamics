@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
+import { scheduleReminder } from "../services/nativeNotifications";
+import { hapticNotification } from "../services/nativeHaptics";
 import { FeatureGate } from "../components/FeatureGate";
 import { InspectionCountdown } from "../components/InspectionCountdown";
 import {
@@ -14,6 +16,12 @@ import {
   Clock,
   RefreshCw,
 } from "lucide-react";
+
+function hashCode(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return h;
+}
 
 export default function EAM() {
   const [equipment, setEquipment] = useState<any[]>([]);
@@ -201,6 +209,24 @@ export default function EAM() {
                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${overdue ? "bg-[#EF4444]/20 text-[#EF4444]" : "bg-[#10B981]/20 text-[#10B981]"}`}>
                             {overdue ? "OVERDUE" : "ACTIVE"}
                           </span>
+                          <button
+                            onClick={async () => {
+                              if (!h.nextInspectionDue) return;
+                              const due = new Date(h.nextInspectionDue);
+                              const reminderAt = new Date(due.getTime() - 24 * 60 * 60 * 1000);
+                              const ok = await scheduleReminder({
+                                id: Math.abs(hashCode(h.id)),
+                                title: `Harness inspection due — ${h.name}`,
+                                body: `${h.serialNumber} is due for AS/NZS 1891.4 inspection on ${due.toLocaleDateString()}.`,
+                                at: reminderAt,
+                              });
+                              if (ok) await hapticNotification("success");
+                              else alert("Notifications not permitted");
+                            }}
+                            className="ml-2 text-[10px] text-[#0EA5E9] hover:underline"
+                          >
+                            Remind
+                          </button>
                         </td>
                       </tr>
                     );
