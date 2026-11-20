@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { env } from "../env";
 import { sandboxRequest } from "./sandboxApi";
+import { offlineSync } from "./offlineSync";
+import { isNative } from "./nativeBridge";
+import { getNetworkStatus } from "./nativeNetwork";
 
 const API_BASE = env.VITE_API_BASE;
 
@@ -29,6 +32,9 @@ class ApiService {
       return sandboxRequest<T>(endpoint, options, env);
     }
 
+    const method = (options.method || "GET").toUpperCase();
+    const isMutation = method !== "GET" && method !== "HEAD";
+
     const token = this.getToken();
     const tenantId = this.getTenantId();
 
@@ -45,17 +51,56 @@ class ApiService {
       (headers as Record<string, string>)["x-tenant-id"] = tenantId;
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    // Offline-first: when there is no connectivity, queue mutations and serve
+    // cached GET responses instead of failing outright.
+    const online = (await getNetworkStatus()).connected;
+    if (!online) {
+      if (isMutation) {
+        const id = await offlineSync.queueWrite({
+          method: method as "POST" | "PATCH" | "PUT" | "DELETE",
+          endpoint,
+          body: options.body ? JSON.parse(String(options.body)) : undefined,
+        });
+        return { id, queued: true, offline: true } as T;
+      }
+      const cached = await offlineSync.getCachedData(endpoint);
+      if (cached) return cached as T;
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers,
+      });
+    } catch (err) {
+      // Network failure mid-request — queue mutations, serve cache for reads.
+      if (isMutation) {
+        const id = await offlineSync.queueWrite({
+          method: method as "POST" | "PATCH" | "PUT" | "DELETE",
+          endpoint,
+          body: options.body ? JSON.parse(String(options.body)) : undefined,
+        });
+        return { id, queued: true, offline: true } as T;
+      }
+      const cached = await offlineSync.getCachedData(endpoint);
+      if (cached) return cached as T;
+      throw err;
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || `Request failed: ${response.status}`);
     }
 
-    return response.json();
+    const data = await response.json();
+
+    // Cache successful GETs for offline use.
+    if (!isMutation) {
+      void offlineSync.cacheData(endpoint, data);
+    }
+
+    return data as T;
   }
 
   // ============================================================

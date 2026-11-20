@@ -6,6 +6,7 @@
 import { isNative } from "./nativeBridge";
 import { getNetworkStatus, onNetworkChange } from "./nativeNetwork";
 import { prefGet, prefSet } from "./nativePreferences";
+import { env } from "../env";
 
 const DB_NAME = "roofdynamics-offline";
 const DB_VERSION = 1;
@@ -183,9 +184,14 @@ class OfflineSyncEngine {
 
     for (const write of pendingWrites) {
       try {
-        const response = await fetch(write.endpoint, {
+        const token = typeof localStorage !== "undefined" ? localStorage.getItem("rd_token") : null;
+        const tenantId = typeof localStorage !== "undefined" ? localStorage.getItem("rd_tenant_id") : null;
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        if (tenantId) headers["x-tenant-id"] = tenantId;
+        const response = await fetch(`${env.VITE_API_BASE}${write.endpoint}`, {
           method: write.method,
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: write.body ? JSON.stringify(write.body) : undefined,
         });
 
