@@ -83,6 +83,7 @@ export function TopBar() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => window.dispatchEvent(new Event("toggle-sidebar"))}
+          aria-label="Toggle sidebar"
           className="p-2 hover:bg-[#1E293B] rounded-md text-[#94A3B8]"
         >
           <Menu className="w-5 h-5" />
@@ -105,6 +106,7 @@ export function TopBar() {
         <button
           onClick={toggleTheme}
           title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
           className="p-1.5 text-[#94A3B8] hover:text-[#F8FAFC] rounded transition"
         >
           {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -121,6 +123,7 @@ export function TopBar() {
           <div className="relative group">
             <button
               onClick={() => setTenantMenuOpen(!tenantMenuOpen)}
+              aria-label="Switch tenant"
               className="flex items-center gap-2 px-3 py-2 hover:bg-[#1E293B] rounded-md transition"
             >
               <Building2 className="w-4 h-4 text-[#0EA5E9]" />
