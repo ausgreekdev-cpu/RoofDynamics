@@ -31,7 +31,7 @@ export default function Login() {
         if (response.ok) {
           const data = await response.json();
           login(data.token, data.user, data.tenant);
-          navigate("/dashboard");
+          navigate(data.user?.role === "developer" ? "/platform" : "/dashboard");
           return;
         }
       }
@@ -75,7 +75,7 @@ export default function Login() {
 
       const token = "demo-token-" + Date.now();
       login(token, userData as any, tenantData as any);
-      navigate("/dashboard");
+      navigate(deriveRole(email) === "developer" ? "/platform" : "/dashboard");
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {

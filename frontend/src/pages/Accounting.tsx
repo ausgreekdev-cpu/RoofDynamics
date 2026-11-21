@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { FeatureGate } from "../components/FeatureGate";
+import { useToast } from "../components/Toast";
 import {
   CreditCard,
   FileText,
@@ -17,6 +18,7 @@ import { generateWarrantyCertificate, generateBASReport, generateTPARCSV, genera
 import { DataTable, type Column } from "../components/DataTable";
 
 export default function Accounting() {
+  const toast = useToast();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [tab, setTab] = useState("invoices");
   const [basData, setBasData] = useState<any>(null);
@@ -68,7 +70,7 @@ export default function Accounting() {
       setAbnCheck(null);
       loadTPAR();
     } catch (err: any) {
-      alert(err.message || "Failed to add contractor");
+      toast.error(err.message || "Failed to add contractor");
     }
   };
 
@@ -326,7 +328,7 @@ export default function Accounting() {
                       });
                       await loadBAS();
                     } catch (err: any) {
-                      alert(err.message || "Failed to create BAS return");
+                      toast.error(err.message || "Failed to create BAS return");
                     }
                   }}
                   className="px-4 py-2 bg-[#0EA5E9] text-[#0F172A] font-bold rounded-lg hover:bg-[#38BDF8] transition"

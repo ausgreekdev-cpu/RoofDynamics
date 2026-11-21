@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { FeatureGate } from "../components/FeatureGate";
+import { useToast } from "../components/Toast";
 import { generateABABankFile } from "../utils/documentGenerator";
 import {
   Users,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 export default function OperationsHRIS() {
+  const toast = useToast();
   const [crew, setCrew] = useState<any[]>([]);
   const [hris, setHRIS] = useState<any[]>([]);
   const [jobs, setJobs] = useState<any[]>([]);
@@ -76,7 +78,7 @@ export default function OperationsHRIS() {
       });
       setPayrollResult(result);
     } catch (err: any) {
-      alert(err.message || "Payroll calculation failed");
+      toast.error(err.message || "Payroll calculation failed");
     } finally {
       setCalculatingPayroll(false);
     }

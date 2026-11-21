@@ -7,6 +7,7 @@ import { Sidebar } from "./components/Sidebar";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ToastProvider } from "./components/Toast";
+import { ConfirmDialogProvider } from "./components/ConfirmDialog";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TutorialProvider } from "./contexts/TutorialContext";
 import { Tutorial } from "./components/Tutorial";
@@ -34,7 +35,7 @@ const Operations = React.lazy(() => import("./pages/Operations"));
 const Billing = React.lazy(() => import("./pages/Billing"));
 const Compliance = React.lazy(() => import("./pages/Compliance"));
 const Help = React.lazy(() => import("./pages/Help"));
-const DeveloperTools = React.lazy(() => import("./pages/DeveloperTools"));
+const DeveloperPortal = React.lazy(() => import("./pages/DeveloperPortal"));
 const Settings = React.lazy(() => import("./pages/Settings"));
 
 const PageLoader = () => (
@@ -95,7 +96,8 @@ function AppRouter() {
           <Route path="/billing" element={<ErrorBoundary moduleName="Billing"><Billing /></ErrorBoundary>} />
           <Route path="/compliance" element={<ErrorBoundary moduleName="Compliance"><Compliance /></ErrorBoundary>} />
           <Route path="/help" element={<ErrorBoundary moduleName="Help"><Help /></ErrorBoundary>} />
-          <Route path="/dev-tools" element={<ErrorBoundary moduleName="Developer Tools"><DeveloperTools /></ErrorBoundary>} />
+          <Route path="/platform" element={<ErrorBoundary moduleName="Developer Platform"><DeveloperPortal /></ErrorBoundary>} />
+          <Route path="/dev-tools" element={<ErrorBoundary moduleName="Developer Tools"><DeveloperPortal /></ErrorBoundary>} />
           <Route path="/settings" element={<ErrorBoundary moduleName="Settings"><Settings /></ErrorBoundary>} />
             </Routes>
           </Suspense>
@@ -110,6 +112,7 @@ export default function App() {
     <ErrorBoundary moduleName="App">
       <ThemeProvider>
         <ToastProvider>
+          <ConfirmDialogProvider>
           <AuthProvider>
             <BrowserRouter>
               <TutorialProvider>
@@ -118,6 +121,7 @@ export default function App() {
               </TutorialProvider>
             </BrowserRouter>
           </AuthProvider>
+          </ConfirmDialogProvider>
         </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>

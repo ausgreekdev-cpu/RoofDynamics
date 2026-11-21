@@ -16,6 +16,7 @@ import { capturePhoto as captureNativePhoto } from '../../services/nativeCamera'
 import { getCurrentPosition } from '../../services/nativeGeo'
 import { haptic, hapticNotification } from '../../services/nativeHaptics'
 import { isNative } from '../../services/nativeBridge'
+import { useConfirm } from '../../components/ConfirmDialog'
 import type { RoofPolygon } from './types'
 
 const VIEW_W = 600
@@ -41,6 +42,7 @@ function loadSession(): SessionState | null {
 }
 
 export function VectorEditor() {
+  const confirm = useConfirm()
   const adapter = getMapAdapter()
   const initial = loadSession()
   const [draft, setDraft] = useState<LonLat[]>([])
@@ -99,8 +101,9 @@ export function VectorEditor() {
     void haptic('light')
   }
 
-  const clearAll = () => {
-    if (!confirm('Clear all measured planes, photos and site location?')) return
+  const clearAll = async () => {
+    const ok = await confirm({ title: 'Clear all measurements?', description: 'All measured planes, photos and site location will be removed.', variant: 'destructive', confirmLabel: 'Clear all' })
+    if (!ok) return
     setDraft([])
     setPolygons([])
     setPhotos([])

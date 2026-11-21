@@ -210,11 +210,11 @@ export function Sidebar() {
         </a>
         {user?.role === "developer" && (
           <a
-            href="/dev-tools"
+            href="/platform"
             className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition text-[#F59E0B] hover:bg-[#1E293B] hover:text-[#F8FAFC]"
           >
             <Code2 className="w-4 h-4" />
-            Developer Tools
+            Platform
           </a>
         )}
       </div>

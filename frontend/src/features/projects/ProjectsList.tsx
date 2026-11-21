@@ -8,12 +8,14 @@ import { Input } from '../../components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog'
 import { DataTable, type Column } from '../../components/DataTable'
 import { useProjects } from './useProjects'
+import { useConfirm } from '../../components/ConfirmDialog'
 import { AuditTrail } from './AuditTrail'
 import { ProjectWizard } from './ProjectWizard'
 import type { Project } from './types'
 
 export function ProjectsList() {
   const { projects, loading, error, create, remove } = useProjects()
+  const confirm = useConfirm()
   const [wizardOpen, setWizardOpen] = useState(false)
   const [auditId, setAuditId] = useState<string | null>(null)
 
@@ -36,7 +38,7 @@ export function ProjectsList() {
       render: (p) => (
         <div className="flex gap-2">
           <button className="text-xs text-[var(--primary)] hover:underline" onClick={() => setAuditId(p.id)}>Audit</button>
-          <button className="text-xs text-[var(--destructive)] hover:underline" onClick={async () => { if (confirm('Delete project?')) await remove(p.id) }}>Delete</button>
+          <button className="text-xs text-[var(--destructive)] hover:underline" onClick={async () => { const ok = await confirm({ title: 'Delete project?', description: 'This action cannot be undone.', variant: 'destructive', confirmLabel: 'Delete' }); if (ok) await remove(p.id) }}>Delete</button>
         </div>
       ),
     },

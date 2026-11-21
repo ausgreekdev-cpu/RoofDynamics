@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { scheduleReminder } from "../services/nativeNotifications";
 import { hapticNotification } from "../services/nativeHaptics";
+import { useToast } from "../components/Toast";
 import { FeatureGate } from "../components/FeatureGate";
 import { InspectionCountdown } from "../components/InspectionCountdown";
 import {
@@ -24,6 +25,7 @@ function hashCode(s: string): number {
 }
 
 export default function EAM() {
+  const toast = useToast();
   const [equipment, setEquipment] = useState<any[]>([]);
   const [harnesses, setHarnesses] = useState<any[]>([]);
   const [inspections, setInspections] = useState<any[]>([]);
@@ -221,7 +223,7 @@ export default function EAM() {
                                 at: reminderAt,
                               });
                               if (ok) await hapticNotification("success");
-                              else alert("Notifications not permitted");
+                              else toast.error("Notifications not permitted");
                             }}
                             className="ml-2 text-[10px] text-[#0EA5E9] hover:underline"
                           >

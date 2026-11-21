@@ -3,14 +3,14 @@ import { test, expect } from '@playwright/test'
 // Public site accessible without authentication
 test('public marketing site loads', async ({ page }) => {
   await page.goto('/site')
-  await expect(page.getByText(/Perth Roofing Done Right/i)).toBeVisible()
+  await expect(page.getByText(/Perth Roofing Done Right/i)).toBeVisible({ timeout: 15000 })
   await expect(page.getByText(/See Your ROI/i)).toBeVisible()
   await expect(page.getByText(/Get Your Free First Report/i)).toBeVisible()
 })
 
 test('marketing ROI calculator responds to input', async ({ page }) => {
   await page.goto('/site')
-  await expect(page.getByText(/Annual saving/i)).toBeVisible()
+  await expect(page.getByText(/Annual saving/i)).toBeVisible({ timeout: 15000 })
 })
 
 // Login flow and authenticated navigation

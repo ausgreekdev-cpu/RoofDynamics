@@ -7,6 +7,8 @@ import { api } from "../services/api";
 import { offlineSync } from "../services/offlineSync";
 import { isNative } from "../services/nativeBridge";
 import { hapticNotification } from "../services/nativeHaptics";
+import { useToast } from "../components/Toast";
+import { useConfirm } from "../components/ConfirmDialog";
 import { Settings as SettingsIcon, User, Palette, Building2, Bell, Database, Info, Save, Trash2 } from "lucide-react";
 
 type Tab = "general" | "profile" | "appearance" | "tenant" | "notifications" | "data" | "about";
@@ -14,6 +16,8 @@ type Tab = "general" | "profile" | "appearance" | "tenant" | "notifications" | "
 export default function Settings() {
   const { user, tenant, setTenant } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [tab, setTab] = useState<Tab>("profile");
 
   // Profile
@@ -42,7 +46,7 @@ export default function Settings() {
   const saveGeneral = () => {
     if (typeof localStorage !== "undefined") localStorage.setItem("rd_general_settings", JSON.stringify(general));
     hapticNotification("success");
-    alert("General settings saved");
+    toast.success("General settings saved");
   };
 
   // Notifications
@@ -61,9 +65,9 @@ export default function Settings() {
         localStorage.setItem("rd_user", JSON.stringify({ ...user, name }));
       }
       await hapticNotification("success");
-      alert("Profile saved");
+      toast.success("Profile saved");
     } catch (e: any) {
-      alert(e?.message || "Failed to save profile");
+      toast.error(e?.message || "Failed to save profile");
     } finally {
       setSavingProfile(false);
     }
@@ -76,9 +80,9 @@ export default function Settings() {
       await api.updateTenant(updated);
       setTenant(updated as any);
       await hapticNotification("success");
-      alert("Tenant settings saved");
+      toast.success("Tenant settings saved");
     } catch (e: any) {
-      alert(e?.message || "Failed to save tenant settings");
+      toast.error(e?.message || "Failed to save tenant settings");
     } finally {
       setSavingTenant(false);
     }
@@ -90,19 +94,22 @@ export default function Settings() {
   };
 
   const clearOfflineQueue = async () => {
-    if (!confirm("Clear the offline write queue?")) return;
+    const ok = await confirm({ title: "Clear offline write queue?", description: "Pending writes will be dropped on next sync.", variant: "destructive", confirmLabel: "Clear" });
+    if (!ok) return;
     // Re-init by clearing IndexedDB store is non-trivial; just reset status listeners
-    alert("Offline queue cleared (pending writes dropped on next sync)");
+    toast.info("Offline queue cleared (pending writes dropped on next sync)");
   };
 
-  const clearSandbox = () => {
-    if (!confirm("Clear the sandbox database? All demo data resets to seed.")) return;
+  const clearSandbox = async () => {
+    const ok = await confirm({ title: "Clear sandbox database?", description: "All demo data resets to seed.", variant: "destructive", confirmLabel: "Clear" });
+    if (!ok) return;
     localStorage.removeItem("rd_sandbox_db");
-    alert("Sandbox database cleared. Reload to reseed.");
+    toast.success("Sandbox database cleared. Reload to reseed.");
   };
 
-  const clearAll = () => {
-    if (!confirm("Clear ALL local data for this origin? You will be logged out.")) return;
+  const clearAll = async () => {
+    const ok = await confirm({ title: "Clear ALL local data?", description: "You will be logged out.", variant: "destructive", confirmLabel: "Clear all" });
+    if (!ok) return;
     localStorage.clear();
     window.location.href = "/";
   };
