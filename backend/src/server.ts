@@ -152,6 +152,53 @@ app.get('/api/auth/session', (req: any, res) => {
 })
 
 // ============================================================
+// USERS (profile)
+// ============================================================
+app.get('/api/users/me', async (req: TenantRequest, res) => {
+  const userId = (req as any).userId
+  if (!userId || String(userId).startsWith('demo-')) {
+    return res.json({
+      id: userId || 'demo-user',
+      tenantId: req.tenantId,
+      email: (req as any).userEmail || 'demo@roofdynamics.com.au',
+      name: 'Demo User',
+      role: (req as any).userRole || 'admin',
+    })
+  }
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    res.json(user)
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || 'Failed to load profile' })
+  }
+})
+
+app.put('/api/users/me', async (req: TenantRequest, res) => {
+  const userId = (req as any).userId
+  const { name, email } = req.body || {}
+  if (!userId || String(userId).startsWith('demo-')) {
+    // Demo/sandbox: echo back without DB persistence
+    return res.json({
+      id: userId || 'demo-user',
+      tenantId: req.tenantId,
+      email: email !== undefined ? email : ((req as any).userEmail || 'demo@roofdynamics.com.au'),
+      name: name !== undefined ? name : 'Demo User',
+      role: (req as any).userRole || 'admin',
+    })
+  }
+  try {
+    const data: any = {}
+    if (name !== undefined) data.name = String(name)
+    if (email !== undefined) data.email = String(email)
+    const user = await prisma.user.update({ where: { id: userId }, data })
+    res.json(user)
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || 'Failed to update profile' })
+  }
+})
+
+// ============================================================
 // TENANTS
 // ============================================================
 app.get('/api/tenants/me', async (req: TenantRequest, res) => {

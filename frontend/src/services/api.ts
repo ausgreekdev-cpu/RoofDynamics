@@ -104,6 +104,20 @@ class ApiService {
   }
 
   // ============================================================
+  // Users (profile)
+  // ============================================================
+  getUser() {
+    return this.request<{ id: string; name: string; email: string; role: string; tenantId: string }>("/users/me");
+  }
+
+  updateUser(data: { name?: string; email?: string }) {
+    return this.request("/users/me", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ============================================================
   // Tenants
   // ============================================================
   getTenant() {
