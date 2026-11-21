@@ -24,6 +24,7 @@ import {
   Scale,
   HelpCircle,
   Code2,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { FeatureGate } from "./FeatureGate";
 
@@ -193,6 +194,13 @@ export function Sidebar() {
       </nav>
 
       <div className="px-3 pb-2 space-y-1">
+        <a
+          href="/settings"
+          className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition text-[#94A3B8] hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+        >
+          <SettingsIcon className="w-4 h-4" />
+          Settings
+        </a>
         <a
           href="/help"
           className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition text-[#94A3B8] hover:bg-[#1E293B] hover:text-[#F8FAFC]"
