@@ -9,7 +9,7 @@ import { isNative } from "../services/nativeBridge";
 import { hapticNotification } from "../services/nativeHaptics";
 import { Settings as SettingsIcon, User, Palette, Building2, Bell, Database, Info, Save, Trash2 } from "lucide-react";
 
-type Tab = "profile" | "appearance" | "tenant" | "notifications" | "data" | "about";
+type Tab = "general" | "profile" | "appearance" | "tenant" | "notifications" | "data" | "about";
 
 export default function Settings() {
   const { user, tenant, setTenant } = useAuth();
@@ -26,6 +26,24 @@ export default function Settings() {
   const [primaryColour, setPrimaryColour] = useState(tenant?.primaryColour ?? "#0EA5E9");
   const [logoUrl, setLogoUrl] = useState(tenant?.logoUrl ?? "");
   const [savingTenant, setSavingTenant] = useState(false);
+
+  // General business settings
+  const [general, setGeneral] = useState(() => {
+    const defaults = { abn: tenant?.abn ?? "", builderReg: tenant?.builderRegNumber ?? "", plumberLicence: tenant?.plumberLicence ?? "", gstRate: "10", dateFormat: "DD/MM/YYYY", timezone: "Australia/Perth", paymentTerms: "14", warrantyYears: "10", businessHours: "07:30-16:30" };
+    if (typeof localStorage === "undefined") return defaults;
+    try {
+      const raw = localStorage.getItem("rd_general_settings");
+      return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;
+    } catch {
+      return defaults;
+    }
+  });
+
+  const saveGeneral = () => {
+    if (typeof localStorage !== "undefined") localStorage.setItem("rd_general_settings", JSON.stringify(general));
+    hapticNotification("success");
+    alert("General settings saved");
+  };
 
   // Notifications
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
@@ -90,6 +108,7 @@ export default function Settings() {
   };
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: "general", label: "General", icon: <SettingsIcon className="w-4 h-4" /> },
     { id: "profile", label: "Profile", icon: <User className="w-4 h-4" /> },
     { id: "appearance", label: "Appearance", icon: <Palette className="w-4 h-4" /> },
     { id: "tenant", label: "Tenant & Branding", icon: <Building2 className="w-4 h-4" /> },
@@ -124,6 +143,65 @@ export default function Settings() {
       </div>
 
       <div className="bg-[#1E293B] border border-[#334155] rounded-xl p-6 space-y-4">
+        {tab === "general" && (
+          <>
+            <h2 className="text-lg font-bold text-[#F8FAFC]">General business settings</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">ABN</label>
+                <input type="text" value={general.abn} onChange={(e) => setGeneral({ ...general, abn: e.target.value })} className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]" placeholder="51 004 395 174" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">Builder registration #</label>
+                <input type="text" value={general.builderReg} onChange={(e) => setGeneral({ ...general, builderReg: e.target.value })} className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]" placeholder="BU12345" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">Plumber licence #</label>
+                <input type="text" value={general.plumberLicence} onChange={(e) => setGeneral({ ...general, plumberLicence: e.target.value })} className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]" placeholder="PL999" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">Default GST rate (%)</label>
+                <input type="number" value={general.gstRate} onChange={(e) => setGeneral({ ...general, gstRate: e.target.value })} className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">Date format</label>
+                <select value={general.dateFormat} onChange={(e) => setGeneral({ ...general, dateFormat: e.target.value })} className="w-full h-9 rounded-md border border-[#334155] bg-[#0F172A] px-3 text-sm text-[#F8FAFC]">
+                  <option value="DD/MM/YYYY">DD/MM/YYYY (AU)</option>
+                  <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
+                  <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">Timezone</label>
+                <select value={general.timezone} onChange={(e) => setGeneral({ ...general, timezone: e.target.value })} className="w-full h-9 rounded-md border border-[#334155] bg-[#0F172A] px-3 text-sm text-[#F8FAFC]">
+                  <option value="Australia/Perth">Australia/Perth (AWST)</option>
+                  <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+                  <option value="Australia/Adelaide">Australia/Adelaide (ACST)</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">Default payment terms (days)</label>
+                <input type="number" value={general.paymentTerms} onChange={(e) => setGeneral({ ...general, paymentTerms: e.target.value })} className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">Default warranty (years)</label>
+                <input type="number" value={general.warrantyYears} onChange={(e) => setGeneral({ ...general, warrantyYears: e.target.value })} className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#94A3B8] mb-1">Business hours</label>
+                <input type="text" value={general.businessHours} onChange={(e) => setGeneral({ ...general, businessHours: e.target.value })} className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-lg text-[#F8FAFC] focus:ring-2 focus:ring-[#0EA5E9]" placeholder="07:30-16:30" />
+              </div>
+            </div>
+            <button
+              onClick={saveGeneral}
+              className="flex items-center gap-2 px-4 py-2 bg-[#0EA5E9] text-[#0F172A] font-bold rounded-lg hover:bg-[#38BDF8] transition"
+            >
+              <Save className="w-4 h-4" /> Save general settings
+            </button>
+          </>
+        )}
+
         {tab === "profile" && (
           <>
             <h2 className="text-lg font-bold text-[#F8FAFC]">Profile</h2>
