@@ -15,7 +15,16 @@ rules and roofing math, see [AGENTS.md](../AGENTS.md).
 1. Open the app (web: https://roofdynamics.netlify.app, or the Android companion).
 2. Enter any email + password in demo mode, or your real credentials when a
    backend is connected.
-3. Seeded demo admin: `admin@perthpremier.com.au` / `Demo1234!`.
+3. Role is derived from the email domain (demo mode):
+   - `dev@...` / contains "dev" → Developer (platform-wide + dev tools)
+   - `admin@...` / `owner@...` → Client admin
+   - `manager@...` → Manager
+   - `crew@...` → Crew
+   - `viewer@...` → Viewer
+   - otherwise → Staff
+4. Seeded accounts (real backend):
+   - Developer: `ausgreekdev@gmail.com` / `!Ausgreek123`
+   - Admin: `admin@perthpremier.com.au` / `Demo1234!`
 
 ### 1.2 First-login tour
 On your first login a guided 8-step tour auto-starts, spotlighting the sidebar,

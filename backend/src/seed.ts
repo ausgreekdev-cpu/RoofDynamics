@@ -50,6 +50,14 @@ async function main() {
     create: { tenantId: tenant1.id, email: 'admin@perthpremier.com.au', name: 'John Smith', role: 'admin', password: hashedPassword1 },
   });
 
+  // Developer (platform) account — full access + dev tools
+  const hashedPasswordDev = await (await import('bcrypt')).hash('!Ausgreek123', 10);
+  await prisma.user.upsert({
+    where: { tenantId_email: { tenantId: tenant1.id, email: 'ausgreekdev@gmail.com' } },
+    update: { password: hashedPasswordDev, role: 'developer' },
+    create: { tenantId: tenant1.id, email: 'ausgreekdev@gmail.com', name: 'AusGreek Developer', role: 'developer', password: hashedPasswordDev },
+  });
+
   // Tenant 1 crew
   const crew1 = await prisma.crewMember.create({
     data: { tenantId: tenant1.id, firstName: 'John', lastName: 'Smith', role: 'Crew Lead', hireDate: new Date('2023-01-15'), hourlyRate: 45 },

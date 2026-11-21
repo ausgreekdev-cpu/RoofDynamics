@@ -60,9 +60,21 @@ npm run dev
 The frontend proxies `/api` to the backend via `vite.config.ts`.
 
 ### Demo login
-Any email + password works with the local JWT fallback. For the seeded admin:
-- **Email:** `admin@perthpremier.com.au`
-- **Password:** `Demo1234!`
+Any email + password works with the local JWT fallback. Role is derived from the
+email domain:
+
+| Email | Role | Access |
+|-------|------|--------|
+| `dev@ausgreekdev.com` (or any email containing "dev") | Developer | Platform-wide + dev tools |
+| `admin@perthpremier.com.au` | Client admin | Full tenant access |
+| `manager@perthpremier.com.au` | Manager | Operations, CRM, measurement |
+| `crew@perthpremier.com.au` | Crew | Projects, measurement, WHS |
+| `viewer@perthpremier.com.au` | Viewer | Read-only |
+| anything else | Staff | Standard read access |
+
+Seeded accounts (real backend):
+- **Dev:** `ausgreekdev@gmail.com` / `!Ausgreek123` (developer)
+- **Admin:** `admin@perthpremier.com.au` / `Demo1234!` (client admin)
 
 ---
 
