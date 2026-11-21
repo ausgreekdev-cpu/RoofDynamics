@@ -10,6 +10,7 @@ import { getMapAdapter } from './adapters'
 import { planAreaSqm, trueAreaSqm, type LonLat } from './area'
 import { Roof3DViewer } from './Roof3DViewer'
 import { calculateRoofBOM } from '../../utils/roofBomCalculator'
+import { buildKml, downloadKml } from './kml'
 import { isCoastalPolygon } from './area'
 import { capturePhoto as captureNativePhoto } from '../../services/nativeCamera'
 import { getCurrentPosition } from '../../services/nativeGeo'
@@ -125,12 +126,13 @@ export function VectorEditor() {
 
   const captureGps = async () => {
     setGpsStatus('Locating…')
-    const pos = await getCurrentPosition()
-    if (!pos) {
-      setGpsStatus('Location unavailable')
+    const result = await getCurrentPosition()
+    if (!result.ok) {
+      setGpsStatus(result.error)
       await hapticNotification('warning')
       return
     }
+    const pos = result.position
     setSiteLocation({ lon: pos.longitude, lat: pos.latitude })
     setGpsStatus(`GPS ${pos.latitude.toFixed(5)}, ${pos.longitude.toFixed(5)} (±${Math.round(pos.accuracy)}m)`)
     await hapticNotification('success')
@@ -168,6 +170,12 @@ export function VectorEditor() {
     a.download = `roof-measurement-${Date.now()}.json`
     a.click()
     URL.revokeObjectURL(url)
+    void hapticNotification('success')
+  }
+
+  const exportKml = () => {
+    const kml = buildKml({ polygons, siteLocation, pitch, roofType })
+    downloadKml(kml)
     void hapticNotification('success')
   }
 
@@ -323,6 +331,7 @@ export function VectorEditor() {
 
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={exportJson} disabled={polygons.length === 0}>Export JSON</Button>
+          <Button variant="outline" onClick={exportKml} disabled={polygons.length === 0}>Export to Google Earth (KML)</Button>
           <Button variant="ghost" onClick={clearAll} disabled={polygons.length === 0 && photos.length === 0 && !siteLocation}>Clear all</Button>
         </div>
 
