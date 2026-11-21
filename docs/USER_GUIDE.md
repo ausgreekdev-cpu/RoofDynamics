@@ -178,6 +178,8 @@ From the pipeline, e-sign an offer to mark a job won.
 - **Roof photos** (native camera on Android, file picker on web).
 - **Undo point / clear draft / delete plane / clear all.**
 - **Export JSON** of the full measurement session.
+- **Export to Google Earth (KML)** — downloads a closed-ring KML (site point +
+  per-plane polygons) that opens in Google Earth / Google Earth Pro.
 - **Offline persistence** — session saved to `localStorage` and restored on reload.
 
 ---
@@ -257,7 +259,33 @@ with a deterministic TS fallback.
 
 ---
 
-## 21. Data & exports
+## 21. Settings (`/settings`)
+
+Seven tabs:
+
+- **General** — ABN, builder registration #, plumber licence #, default GST rate,
+  date format, timezone, default payment terms, default warranty (years), business
+  hours. Statutory identifiers sync to the tenant record.
+- **Profile** — your name, email; persisted to `/api/users/me` (offline-queued).
+- **Appearance** — dark/light theme toggle.
+- **Tenant & Branding** — company name, primary colour, logo URL; syncs to
+  `/api/tenants/me`.
+- **Notifications** — local reminder toggle (EAM harness inspections etc.).
+- **Data & Storage** — clear offline write queue, clear sandbox DB, clear all
+  local data (with confirmation dialogs).
+- **About** — version, attribution, links.
+
+All saves use in-app toast feedback; destructive actions use a confirmation dialog.
+
+## 22. Developer Platform (`/platform`) — developers only
+
+- Tenant list with module counts; **View as tenant** (impersonation) with exit.
+- Session inspection, system health, sandbox DB inspector, storage tools.
+- Role matrix reference. Developers bypass feature gates and role guards platform-wide.
+
+---
+
+## 23. Data & exports
 
 - **PDF:** `@react-pdf/renderer` live preview; jsPDF legacy generators.
 - **CSV:** batch import/export for projects, leads, stock.
