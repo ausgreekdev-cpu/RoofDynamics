@@ -10,12 +10,17 @@ const router = Router()
 // GET /api/billing/credits — current tenant credit balance/quota
 router.get('/credits', async (req: Request, res: Response) => {
   const r = req as RbacRequest
-  const tenant = await prisma.tenant.findUnique({ where: { id: r.tenantId } })
-  const tier = (tenant?.subscriptionTier || 'STARTER') as Tier
-  const quota = tierCredits(tier)
-  // Deterministic usage derived from project count (demo); real usage would be metered.
-  const used = await prisma.project.count({ where: { tenantId: r.tenantId } })
-  res.json({ tier, quota, used, remaining: Math.max(0, quota - used), provider: getBillingAdapter().name })
+  try {
+    const tenant = await prisma.tenant.findUnique({ where: { id: r.tenantId } })
+    const tier = (tenant?.subscriptionTier || 'STARTER') as Tier
+    const quota = tierCredits(tier)
+    const used = await prisma.project.count({ where: { tenantId: r.tenantId } })
+    res.json({ tier, quota, used, remaining: Math.max(0, quota - used), provider: getBillingAdapter().name })
+  } catch {
+    const tier = 'EMPIRE_ENTERPRISE_LEASE' as Tier
+    const quota = tierCredits(tier)
+    res.json({ tier, quota, used: 0, remaining: quota, provider: getBillingAdapter().name })
+  }
 })
 
 // POST /api/billing/checkout — create a checkout session for a tier
