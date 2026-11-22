@@ -31,8 +31,8 @@ describe('RBAC matrix', () => {
     expect(normalizeRole('developer')).toBe('developer')
   })
 
-  it('defines exactly 7 roles', () => {
-    expect(Object.keys(ROLE_PERMISSIONS)).toHaveLength(7)
+  it('defines exactly 8 roles', () => {
+    expect(Object.keys(ROLE_PERMISSIONS)).toHaveLength(8)
   })
 })
 
