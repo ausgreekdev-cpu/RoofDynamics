@@ -1055,3 +1055,33 @@ Dispatch & POs, Billing & Credits and WA Compliance "don't work".
 ### Verification
 Frontend build pass; frontend tests **134 passed**; Playwright E2E **6/6**
 (including real sidebar navigation).
+
+---
+
+## Wave 5 — Feature Quality & Multi-Wave (2026-11-22)
+
+### Quality plan (7 steps) — all complete
+- [x] Step 1 Consistent in-app feedback (Toast + ConfirmDialog; 0 native alert/confirm)
+- [x] Step 2 Real settings persistence (PUT /api/users/me + /api/tenants/me)
+- [x] Step 3 Backend tests green (89 → 92 tests)
+- [x] Step 4 Aerial Measurement GPS + KML E2E coverage
+- [x] Step 5 Role segregation E2E (developer/admin/manager/crew/viewer/customer)
+- [x] Step 6 Accessibility pass (aria-labels, keyboard nav)
+- [x] Step 7 Docs (Settings, dev platform, KML in help.md + USER_GUIDE.md)
+
+### Multi-wave feature plan (12 steps) — all complete
+- [x] 1.1 Supplier price sync (Inngest + cache + cost overrides)
+- [x] 1.2 MyLeave WA + STP Phase 2 exports
+- [x] 1.3 Offline conflict resolution (ConflictResolver modal)
+- [x] 2.1 Live crew dispatch map
+- [x] 2.2 Job photo timeline
+- [x] 2.3 BAL/bushfire report (AS 3959)
+- [x] 3.1 AI quote drafter
+- [x] 3.2 Customer portal + customer role
+- [x] 4.1 Push notification registration
+- [x] 4.2 White-label onboarding wizard
+
+### Verification (final)
+Frontend build pass; frontend tests **140 passed**; Playwright E2E **17 passed**;
+backend tests **92 passed**; backend tsc clean. Deployed to
+https://roofdynamics.netlify.app (commit dbbc6d3).
