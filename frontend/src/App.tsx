@@ -75,7 +75,7 @@ function AppRouter() {
     <div className="min-h-screen bg-[#0F172A] text-[#F8FAFC]">
       <TopBar />
       <Sidebar />
-      <div className="lg:pl-64 pt-16 p-4">
+      <main className="lg:pl-64 pt-16 p-4">
         <ErrorBoundary moduleName="AppRouter">
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -107,7 +107,7 @@ function AppRouter() {
             </Routes>
           </Suspense>
         </ErrorBoundary>
-      </div>
+      </main>
     </div>
   );
 }
