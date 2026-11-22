@@ -7,6 +7,7 @@ import { api } from "../services/api";
 import { offlineSync } from "../services/offlineSync";
 import { isNative } from "../services/nativeBridge";
 import { hapticNotification } from "../services/nativeHaptics";
+import { registerPushNotifications } from "../services/nativeNotifications";
 import { useToast } from "../components/Toast";
 import { useConfirm } from "../components/ConfirmDialog";
 import { ConflictResolver } from "../components/ConflictResolver";
@@ -366,6 +367,22 @@ export default function Settings() {
                   className={`px-3 py-1.5 rounded-lg text-sm transition ${remindersEnabled ? "bg-[#10B981] text-[#0F172A] font-bold" : "bg-[#1E293B] text-[#94A3B8] border border-[#334155]"}`}
                 >
                   {remindersEnabled ? "On" : "Off"}
+                </button>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-[#0F172A] border border-[#334155] rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-[#F8FAFC]">Push notifications</p>
+                  <p className="text-xs text-[#94A3B8]">SWMS reminders & payment-schedule countdowns (native)</p>
+                </div>
+                <button
+                  onClick={async () => {
+                    const r = await registerPushNotifications();
+                    if (r.ok) toast.success(`Push registered${r.token ? " (" + r.token.slice(0, 8) + "…)" : ""}`);
+                    else toast.error("Push registration failed");
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-sm bg-[#0EA5E9] text-[#0F172A] font-bold"
+                >
+                  Register
                 </button>
               </div>
               <p className="text-xs text-[#64748B]">

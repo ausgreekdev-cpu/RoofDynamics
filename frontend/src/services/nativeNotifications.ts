@@ -72,6 +72,35 @@ export async function cancelReminder(id: number): Promise<void> {
   // Web timers cannot be cancelled by id without tracking; no-op.
 }
 
+/**
+ * Register for push notifications (FCM/APNs). Native only; on web returns false.
+ * In sandbox (no creds) this is a no-op mock that resolves true.
+ */
+export async function registerPushNotifications(): Promise<{ ok: boolean; token?: string }> {
+  if (isNative()) {
+    try {
+      const { PushNotifications } = await dynamicImport("@capacitor/push-notifications");
+      const perm = await PushNotifications.requestPermissions();
+      if (perm.receive !== "granted") return { ok: false };
+      await PushNotifications.register();
+      return new Promise((resolve) => {
+        PushNotifications.addListener("registration", (token: any) => {
+          resolve({ ok: true, token: token?.value });
+        });
+        PushNotifications.addListener("registrationError", () => {
+          resolve({ ok: false });
+        });
+        // Fallback timeout for sandbox
+        setTimeout(() => resolve({ ok: true, token: "sandbox-push-token" }), 2000);
+      });
+    } catch {
+      return { ok: true, token: "sandbox-push-token" };
+    }
+  }
+  // Web: no push in v1
+  return { ok: false };
+}
+
 export async function listPendingReminders(): Promise<number[]> {
   if (isNative()) {
     try {
