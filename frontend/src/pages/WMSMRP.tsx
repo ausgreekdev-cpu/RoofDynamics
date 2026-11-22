@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "../services/api";
 import { FeatureGate } from "../components/FeatureGate";
 import { useToast } from "../components/Toast";
+import { StockItemSchema } from "../schemas";
 import { DataTable, type Column } from "../components/DataTable";
 import {
   Package,
@@ -152,9 +153,14 @@ export default function WMSMRP() {
 
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    const parsed = StockItemSchema.safeParse(newItem);
+    if (!parsed.success) {
+      toast.showToast("error", parsed.error.issues[0]?.message || "Invalid stock item");
+      return;
+    }
     setLoading(true);
     try {
-      await api.createStockItem(newItem);
+      await api.createStockItem(parsed.data);
       setNewItem({ sku: "", name: "", location: "WELSHPOOL_MAIN_YARD", quantityOnHand: 0, reorderPoint: 0, unitCost: 0, supplier: "" });
       loadData();
     } catch (err: unknown) {
