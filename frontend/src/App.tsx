@@ -7,6 +7,7 @@ import { Sidebar } from "./components/Sidebar";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ToastProvider } from "./components/Toast";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConfirmDialogProvider } from "./components/ConfirmDialog";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TutorialProvider } from "./contexts/TutorialContext";
@@ -111,11 +112,14 @@ function AppRouter() {
   );
 }
 
+const queryClient = new QueryClient();
+
 export default function App() {
   return (
     <ErrorBoundary moduleName="App">
       <ThemeProvider>
         <ToastProvider>
+          <QueryClientProvider client={queryClient}>
           <ConfirmDialogProvider>
           <AuthProvider>
             <BrowserRouter>
@@ -126,6 +130,7 @@ export default function App() {
             </BrowserRouter>
           </AuthProvider>
           </ConfirmDialogProvider>
+          </QueryClientProvider>
         </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>

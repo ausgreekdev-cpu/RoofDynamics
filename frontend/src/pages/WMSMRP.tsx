@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import { FeatureGate } from "../components/FeatureGate";
 import { useToast } from "../components/Toast";
@@ -50,11 +51,27 @@ interface PurchaseOrder { id: string; rfqId?: string; supplier: string; total: n
 
 export default function WMSMRP() {
   const toast = useToast();
-  const [stockItems, setStockItems] = useState<StockItem[]>([]);
+  const queryClient = useQueryClient();
+  const [selectedLocation, setSelectedLocation] = useState<string | undefined>();
+  const { data: queriedStock } = useQuery({
+    queryKey: ["stockItems", selectedLocation],
+    queryFn: async () => {
+      try {
+        return await api.getStockItems(selectedLocation);
+      } catch {
+        return [
+          { id: "1", sku: "CB-CORR-3.0", name: "Colorbond Corrugated 3.0m", location: "WELSHPOOL_MAIN_YARD", quantityOnHand: 45, quantityReserved: 10, reorderPoint: 20, unitCost: 32, supplier: "Lysaght Welshpool" },
+          { id: "2", sku: "BATT-40MM", name: "Topspan 40mm Batten", location: "HILUX_UTE_1", quantityOnHand: 120, quantityReserved: 30, reorderPoint: 50, unitCost: 8.5, supplier: "Stramit Malaga" },
+          { id: "3", sku: "ANTICON-60", name: "Anticon 60mm Insulation", location: "WELSHPOOL_MAIN_YARD", quantityOnHand: 12, quantityReserved: 5, reorderPoint: 8, unitCost: 65, supplier: "Metroll Canning Vale" },
+          { id: "4", sku: "SCREW-12G", name: "12g x 65mm Crest Screws", location: "ISUZU_TRUCK_2", quantityOnHand: 5000, quantityReserved: 1500, reorderPoint: 2000, unitCost: 0.65, supplier: "Stratco" },
+        ] as StockItem[];
+      }
+    },
+  });
+  const stockItems = (queriedStock ?? []) as StockItem[];
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [rfqs, setRfqs] = useState<RFQ[]>([]);
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<string | undefined>();
 
   const loadRFQs = async () => {
     try {
@@ -121,19 +138,9 @@ export default function WMSMRP() {
 
   const loadData = async () => {
     try {
-      const [items, res] = await Promise.all([
-        api.getStockItems(selectedLocation),
-        api.getStockReservations(),
-      ]);
-      setStockItems(items);
+      const res = await api.getStockReservations();
       setReservations(res);
     } catch {
-      setStockItems([
-        { id: "1", sku: "CB-CORR-3.0", name: "Colorbond Corrugated 3.0m", location: "WELSHPOOL_MAIN_YARD", quantityOnHand: 45, quantityReserved: 10, reorderPoint: 20, unitCost: 32, supplier: "Lysaght Welshpool" },
-        { id: "2", sku: "BATT-40MM", name: "Topspan 40mm Batten", location: "HILUX_UTE_1", quantityOnHand: 120, quantityReserved: 30, reorderPoint: 50, unitCost: 8.5, supplier: "Stramit Malaga" },
-        { id: "3", sku: "ANTICON-60", name: "Anticon 60mm Insulation", location: "WELSHPOOL_MAIN_YARD", quantityOnHand: 12, quantityReserved: 5, reorderPoint: 8, unitCost: 65, supplier: "Metroll Canning Vale" },
-        { id: "4", sku: "SCREW-12G", name: "12g x 65mm Crest Screws", location: "ISUZU_TRUCK_2", quantityOnHand: 5000, quantityReserved: 1500, reorderPoint: 2000, unitCost: 0.65, supplier: "Stratco" },
-      ]);
       setReservations([]);
     }
   };
@@ -162,6 +169,7 @@ export default function WMSMRP() {
     try {
       await api.createStockItem(parsed.data);
       setNewItem({ sku: "", name: "", location: "WELSHPOOL_MAIN_YARD", quantityOnHand: 0, reorderPoint: 0, unitCost: 0, supplier: "" });
+      queryClient.invalidateQueries({ queryKey: ["stockItems"] });
       loadData();
     } catch (err: unknown) {
       toast.showToast("error", (err as Error)?.message || "Failed to create stock item");
