@@ -23,8 +23,10 @@ const COLORS = ["#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
 
 export default function Dashboard() {
   const { tenant } = useAuth();
-  const [summary, setSummary] = useState<any>(null);
-  const [executions, setExecutions] = useState<any[]>([]);
+  interface DashboardSummary { totalQuotes?: number; totalJobs?: number; totalRevenue?: number; lowStockCount?: number; [key: string]: unknown }
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  interface ExecutionEntry { id?: string; agentId: string; agentName: string; status: string; message: string; timestamp: string; data?: unknown }
+  const [executions, setExecutions] = useState<ExecutionEntry[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<AgentResult[] | null>(null);
   const [llmInitialized, setLlmInitialized] = useState(false);
@@ -40,7 +42,7 @@ export default function Dashboard() {
         setExecutions((prev) => [
           ...prev,
           {
-            id: Date.now(),
+            id: String(Date.now()),
             agentId: "realtime",
             agentName: "Real-Time Update",
             status: "completed",
@@ -73,12 +75,12 @@ export default function Dashboard() {
 
   const handleRunAll = async () => {
     setIsRunning(true);
-    const feed: any[] = [];
+    const feed: ExecutionEntry[] = [];
     setExecutions(feed);
 
-    const addEntry = (agentId: string, agentName: string, status: any, message: string, data?: any) => {
+    const addEntry = (agentId: string, agentName: string, status: string, message: string, data?: unknown) => {
       const entry = {
-        id: Date.now() + Math.random(),
+        id: String(Date.now() + Math.random()),
         agentId,
         agentName,
         status,
@@ -127,8 +129,8 @@ export default function Dashboard() {
       }
 
       addEntry("system", "Empire Automation", "completed", "All automations complete. Check module results.");
-    } catch (err: any) {
-      addEntry("system", "Empire Automation", "failed", err.message || "Automation failed");
+    } catch (err: unknown) {
+      addEntry("system", "Empire Automation", "failed", (err as Error)?.message || "Automation failed");
     } finally {
       setIsRunning(false);
     }
@@ -257,7 +259,7 @@ export default function Dashboard() {
                   outerRadius={80}
                   fill="#8884d8"
                   labelLine={false}
-                  label={({ percent }: any) => `${Math.round(percent * 100)}%`}
+                  label={({ percent }: { percent?: number }) => `${Math.round((percent ?? 0) * 100)}%`}
                 >
                   {funnelData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -317,9 +319,9 @@ export default function Dashboard() {
                   <div className="text-sm font-medium text-[#F8FAFC]">{entry.agentName}</div>
                   <span className="text-[#94A3B8] text-xs">{entry.message}</span>
                 </div>
-                {entry.data && entry.agentId !== "system" && (
+                {!!entry.data && entry.agentId !== "system" && (
                   <div className="mt-2 pt-2 border-t border-[#334155]/50 text-xs text-[#64748B]">
-                    {JSON.stringify(entry.data).slice(0, 200)}...
+                    {String(JSON.stringify(entry.data ?? {}).slice(0, 200))}...
                   </div>
                 )}
               </div>
@@ -340,12 +342,12 @@ export default function Dashboard() {
   );
 }
 
-const PhoneCallIcon = (props: any) => <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 011 1.091l.168.168c.103.103.15.24.168.37l.213.374c.056.14.076.298.076.47v4.28c0 .171-.02.337-.076.48l-.213.373c-.018.13-.065.267-.168.37l-.168.167c-.09.09-.14.207-.168.368l-.053.215c-.024.095-.03.197-.03.296v1.282c0 .099.006.201.03.296l.053.215c.028.161.078.292.168.368l.168.167c.103.104.24.15.37.168l.374.213c.172.096.33.116.47.076h4.28c.171 0 .337-.02.48-.076l.373-.213c.13-.018.267-.065.37-.168l.167-.168c.16-.161.27-.375.27-.593V8.28c0-.218-.11-.431-.27-.593l-.167-.168c-.09-.09-.207-.14-.368-.168l-.215-.053c-.095-.024-.197-.03-.296-.03H5.28c-.218 0-.431.11-.593.27L2 7.28A2 2 0 004 9h12a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2z"/></svg>;
-const HardHatIcon = (props: any) => <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 11v3a2 2 0 002 2h6a2 2 0 002-2v-3m-2-6l-4-4m0 0L5 9m5 4 4 4m-4-4h3m-3 3v3m-6 0H5a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v2a2 2 0 01-2 2H9z"/></svg>;
-const DollarSignIcon = (props: any) => <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2-3 .895-3 2-1.343 2-3 2zm0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>;
-const AlertCircleIcon = (props: any) => <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>;
+const PhoneCallIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 011 1.091l.168.168c.103.103.15.24.168.37l.213.374c.056.14.076.298.076.47v4.28c0 .171-.02.337-.076.48l-.213.373c-.018.13-.065.267-.168.37l-.168.167c-.09.09-.14.207-.168.368l-.053.215c-.024.095-.03.197-.03.296v1.282c0 .099.006.201.03.296l.053.215c.028.161.078.292.168.368l.168.167c.103.104.24.15.37.168l.374.213c.172.096.33.116.47.076h4.28c.171 0 .337-.02.48-.076l.373-.213c.13-.018.267-.065.37-.168l.167-.168c.16-.161.27-.375.27-.593V8.28c0-.218-.11-.431-.27-.593l-.167-.168c-.09-.09-.207-.14-.368-.168l-.215-.053c-.095-.024-.197-.03-.296-.03H5.28c-.218 0-.431.11-.593.27L2 7.28A2 2 0 004 9h12a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2z"/></svg>;
+const HardHatIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 11v3a2 2 0 002 2h6a2 2 0 002-2v-3m-2-6l-4-4m0 0L5 9m5 4 4 4m-4-4h3m-3 3v3m-6 0H5a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v2a2 2 0 01-2 2H9z"/></svg>;
+const DollarSignIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2-3 .895-3 2-1.343 2-3 2zm0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>;
+const AlertCircleIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>;
 
-function MetricCard({ title, value, icon: Icon, color, trend }: { title: string; value: number | string; icon: any; color: string; trend: string }) {
+function MetricCard({ title, value, icon: Icon, color, trend }: { title: string; value: number | string; icon: React.ComponentType<{ className?: string }>; color: string; trend: string }) {
   return (
     <div className="bg-[#1E293B] border border-[#334155] rounded-xl p-5">
       <div className="flex items-center justify-between">

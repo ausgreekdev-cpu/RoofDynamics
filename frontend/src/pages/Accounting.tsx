@@ -17,16 +17,21 @@ import {
 import { generateWarrantyCertificate, generateBASReport, generateTPARCSV, generateInvoicePDF, generateABABankFile } from "../utils/documentGenerator";
 import { DataTable, type Column } from "../components/DataTable";
 
+interface Invoice { id: string; [key: string]: any }
+interface BasData { [key: string]: any }
+interface TparRecord { id: string; [key: string]: any }
+interface AbnCheck { abn: string; valid?: boolean; isValid?: boolean; name?: string; [key: string]: any }
+
 export default function Accounting() {
   const toast = useToast();
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [tab, setTab] = useState("invoices");
-  const [basData, setBasData] = useState<any>(null);
+  const [basData, setBasData] = useState<BasData | null>(null);
   const [basPeriod, setBasPeriod] = useState("Q1");
   const [basYear, setBasYear] = useState("2026");
-  const [tparRecords, setTparRecords] = useState<any[]>([]);
+  const [tparRecords, setTparRecords] = useState<TparRecord[]>([]);
   const [newContractor, setNewContractor] = useState({ name: "", abn: "", payments: "", year: "2026" });
-  const [abnCheck, setAbnCheck] = useState<any>(null);
+  const [abnCheck, setAbnCheck] = useState<AbnCheck | null>(null);
 
   useEffect(() => {
     loadData();
@@ -69,8 +74,8 @@ export default function Accounting() {
       setNewContractor({ name: "", abn: "", payments: "", year: "2026" });
       setAbnCheck(null);
       loadTPAR();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to add contractor");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to add contractor");
     }
   };
 
@@ -120,7 +125,7 @@ export default function Accounting() {
     CANCELLED: "#94A3B8",
   };
 
-  const invoiceColumns: Column<any>[] = [
+  const invoiceColumns: Column<Invoice>[] = [
     { key: "invoiceNumber", header: "Invoice #", render: (r) => <span className="font-mono">{r.invoiceNumber}</span> },
     { key: "milestone", header: "Milestone", render: (r) => milestoneLabels[r.milestone || ""] || "—" },
     { key: "amount", header: "Amount", render: (r) => `$${Number(r.amount || 0).toLocaleString()}`, sortValue: (r) => Number(r.amount || 0) },
@@ -323,12 +328,12 @@ export default function Accounting() {
                       await api.createBASReturn({
                         period: basPeriod,
                         year: basYear,
-                        gstCollected: basData.gstCollected,
-                        gstPaid: basData.gstPaid,
+                        gstCollected: basData!.gstCollected,
+                        gstPaid: basData!.gstPaid,
                       });
                       await loadBAS();
-                    } catch (err: any) {
-                      toast.error(err.message || "Failed to create BAS return");
+                    } catch (err: unknown) {
+                      toast.error((err as Error)?.message || "Failed to create BAS return");
                     }
                   }}
                   className="px-4 py-2 bg-[#0EA5E9] text-[#0F172A] font-bold rounded-lg hover:bg-[#38BDF8] transition"
@@ -472,7 +477,7 @@ function StatCard({ title, value, color, icon }: { title: string; value: string 
   );
 }
 
-const ClockIcon = (props: any) => (
+const ClockIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>

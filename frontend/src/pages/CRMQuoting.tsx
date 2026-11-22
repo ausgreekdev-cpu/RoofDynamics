@@ -46,9 +46,9 @@ export default function CRMQuoting() {
     try {
       await api.updateLead(draggedLeadId, { status: newStatus });
       toast.showToast("success", `${lead.firstName} ${lead.lastName} moved to ${newStatus}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setLeads((prev) => prev.map((l) => (l.id === draggedLeadId ? { ...l, status: lead.status } : l)));
-      toast.showToast("error", err.message || "Failed to update lead status");
+      toast.showToast("error", (err as Error)?.message || "Failed to update lead status");
     }
   };
 
@@ -105,7 +105,7 @@ export default function CRMQuoting() {
       });
 
       const compliance = evaluateWACompliance({
-        quoteTotalIncGst: result.items.reduce((sum: number, i: any) => sum + i.totalCost, 0) * 1.1,
+        quoteTotalIncGst: result.items.reduce((sum: number, i: { totalCost: number }) => sum + i.totalCost, 0) * 1.1,
         jobType: "reroofing",
         includesRoofPlumbing: false,
         roofHeight,
@@ -170,8 +170,8 @@ export default function CRMQuoting() {
 
       setSelectedQuote(null);
       fetchQuotes();
-    } catch (err: any) {
-      toast.showToast("error", "Failed to accept quote: " + (err.message || "Unknown error"));
+    } catch (err: unknown) {
+      toast.showToast("error", "Failed to accept quote: " + ((err as Error)?.message || "Unknown error"));
     }
   };
 
@@ -540,7 +540,7 @@ export default function CRMQuoting() {
   );
 }
 
-const ListIcon = (props: any) => (
+const ListIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
   </svg>

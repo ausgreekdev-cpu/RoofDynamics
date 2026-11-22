@@ -19,12 +19,13 @@ import {
 
 export default function OperationsHRIS() {
   const toast = useToast();
+  interface PayrollLine { crewMemberId: string; firstName: string; lastName: string; hoursWorked: number; ote: number; superGuarantee: number; paygWithholding: number; myLeaveLevy: number; netPay: number }
   const [crew, setCrew] = useState<any[]>([]);
   const [hris, setHRIS] = useState<any[]>([]);
   const [jobs, setJobs] = useState<any[]>([]);
   const [rosterView, setRosterView] = useState<"list" | "calendar">("list");
   const [weather, setWeather] = useState({ temp: 18, windSpeed: 25, condition: "Partly Cloudy" });
-  const [payrollResult, setPayrollResult] = useState<any>(null);
+  const [payrollResult, setPayrollResult] = useState<{ lines: any[]; totals: any; stpJson: any } | null>(null);
   const [hoursInput, setHoursInput] = useState<Record<string, number>>({});
   const [calculatingPayroll, setCalculatingPayroll] = useState(false);
   const [payPeriodStart, setPayPeriodStart] = useState(new Date().toISOString().split("T")[0]);
@@ -59,7 +60,7 @@ export default function OperationsHRIS() {
   const handleCalculatePayroll = async () => {
     setCalculatingPayroll(true);
     try {
-      const crewInputs = crew.map((member) => ({
+      const crewInputs = crew.map((member: any) => ({
         crewMemberId: member.id,
         firstName: member.firstName,
         lastName: member.lastName,
@@ -77,8 +78,8 @@ export default function OperationsHRIS() {
         save: false,
       });
       setPayrollResult(result);
-    } catch (err: any) {
-      toast.error(err.message || "Payroll calculation failed");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Payroll calculation failed");
     } finally {
       setCalculatingPayroll(false);
     }
@@ -204,7 +205,7 @@ export default function OperationsHRIS() {
                       <div className={`text-sm font-bold ${isToday ? "text-[#0EA5E9]" : "text-[#F8FAFC]"}`}>{d.getDate()}</div>
                     </div>
                     <div className="space-y-1">
-                      {dayJobs.map((j) => (
+                      {dayJobs.map((j: any) => (
                         <div key={j.id} className="p-1.5 rounded bg-[#0EA5E9]/15 border border-[#0EA5E9]/30 text-[10px]">
                           <div className="font-bold text-[#38BDF8]">{j.jobNumber}</div>
                           <div className="text-[#94A3B8] truncate">{j.quote?.customerSuburb || j.status}</div>
@@ -234,7 +235,7 @@ export default function OperationsHRIS() {
                 </tr>
               </thead>
               <tbody>
-                {crew.map((member, i) => {
+                {crew.map((member: any, i: number) => {
                   const hrisProfile = hris.find((h) => h.crewMemberId === member.id);
                   const hasWhiteCard = hrisProfile?.whiteCardNumber;
                   const hasWAH = hrisProfile?.workingAtHeightsCert;
@@ -319,7 +320,7 @@ export default function OperationsHRIS() {
                 </tr>
               </thead>
               <tbody>
-                {crew.map((member) => (
+                {crew.map((member: any) => (
                   <tr key={member.id} className="border-b border-[#1E293B]/30">
                     <td className="px-4 py-3 text-sm text-[#F8FAFC]">{member.firstName} {member.lastName}</td>
                     <td className="px-4 py-3 text-sm text-[#94A3B8]">{member.role}</td>

@@ -23,12 +23,36 @@ const LOCATIONS = [
   { key: "ISUZU_TRUCK_2", label: "Isuzu Truck 2" },
 ];
 
+interface StockItem {
+  id: string;
+  sku: string;
+  name: string;
+  location: string;
+  quantityOnHand: number;
+  quantityReserved: number;
+  reorderPoint: number;
+  unitCost: number;
+  supplier: string;
+}
+interface Reservation { id: string; sku: string; quantity: number; location: string; status: string }
+interface RFQ {
+  id: string;
+  supplier: string;
+  supplierName?: string;
+  title?: string;
+  items: Array<{ sku: string; quantity: number }>;
+  status: string;
+  bidAmount?: number;
+  leadTimeDays?: number;
+}
+interface PurchaseOrder { id: string; rfqId?: string; supplier: string; total: number; status: string }
+
 export default function WMSMRP() {
   const toast = useToast();
-  const [stockItems, setStockItems] = useState<any[]>([]);
-  const [reservations, setReservations] = useState<any[]>([]);
-  const [rfqs, setRfqs] = useState<any[]>([]);
-  const [purchaseOrders, setPurchaseOrders] = useState<any[]>([]);
+  const [stockItems, setStockItems] = useState<StockItem[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [rfqs, setRfqs] = useState<RFQ[]>([]);
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>();
 
   const loadRFQs = async () => {
@@ -42,7 +66,7 @@ export default function WMSMRP() {
     }
   };
 
-  const handleGeneratePO = async (rfq: any) => {
+  const handleGeneratePO = async (rfq: RFQ) => {
     try {
       const poNumber = `PO-${Date.now().toString().slice(-6)}`;
       await api.createPurchaseOrder({
@@ -55,14 +79,14 @@ export default function WMSMRP() {
       await api.updateRFQ(rfq.id, { status: "accepted" });
       toast.showToast("success", `PO ${poNumber} generated for ${rfq.supplierName}`);
       loadRFQs();
-    } catch (err: any) {
-      toast.showToast("error", err.message || "Failed to generate PO");
+    } catch (err: unknown) {
+      toast.showToast("error", (err as Error)?.message || "Failed to generate PO");
     }
   };
   const [newItem, setNewItem] = useState({
     sku: "",
     name: "",
-    location: "WELSHPOOL_MAIN_YARD" as any,
+    location: "WELSHPOOL_MAIN_YARD",
     quantityOnHand: 0,
     reorderPoint: 0,
     unitCost: 0,
@@ -70,7 +94,7 @@ export default function WMSMRP() {
   });
   const [loading, setLoading] = useState(false);
 
-  const stockColumns: Column<any>[] = [
+  const stockColumns: Column<StockItem>[] = [
     { key: "sku", header: "SKU", render: (r) => <span className="text-[#94A3B8]">{r.sku}</span> },
     { key: "name", header: "Item Name", render: (r) => <span className="font-medium">{r.name}</span> },
     { key: "location", header: "Location", render: (r) => <span className="text-[#94A3B8]">{r.location}</span> },
@@ -117,8 +141,8 @@ export default function WMSMRP() {
     try {
       const result = await api.syncSupplierPrices();
       toast.showToast("success", `Synced ${result.count} supplier prices`);
-    } catch (err: any) {
-      toast.showToast("error", err?.message || "Price sync failed");
+    } catch (err: unknown) {
+      toast.showToast("error", (err as Error)?.message || "Price sync failed");
     }
   };
 
@@ -133,14 +157,14 @@ export default function WMSMRP() {
       await api.createStockItem(newItem);
       setNewItem({ sku: "", name: "", location: "WELSHPOOL_MAIN_YARD", quantityOnHand: 0, reorderPoint: 0, unitCost: 0, supplier: "" });
       loadData();
-    } catch (err: any) {
-      toast.showToast("error", err.message || "Failed to create stock item");
+    } catch (err: unknown) {
+      toast.showToast("error", (err as Error)?.message || "Failed to create stock item");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReserve = async (item: any) => {
+  const handleReserve = async (item: StockItem) => {
     const qty = prompt(`Reserve quantity for ${item.name}? (on hand: ${item.quantityOnHand})`);
     if (qty === null) return;
     const q = parseFloat(qty);
@@ -148,8 +172,8 @@ export default function WMSMRP() {
     try {
       await api.createStockReservation({ jobId: "job-demo", stockItemId: item.id, quantity: q });
       loadData();
-    } catch (err: any) {
-      toast.showToast("error", err.message || "Failed to reserve stock");
+    } catch (err: unknown) {
+      toast.showToast("error", (err as Error)?.message || "Failed to reserve stock");
     }
   };
 

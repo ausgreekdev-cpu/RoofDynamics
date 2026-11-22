@@ -556,7 +556,7 @@ class ApiService {
   // ============================================================
   // Payroll
   // ============================================================
-  calculatePayroll(data: any) {
+  calculatePayroll(data: any): Promise<{ lines: any[]; totals: any; stpJson: any }> {
     return this.request("/payroll/calculate", {
       method: "POST",
       body: JSON.stringify(data),
