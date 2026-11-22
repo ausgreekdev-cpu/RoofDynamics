@@ -9,6 +9,7 @@ import { isNative } from "../services/nativeBridge";
 import { hapticNotification } from "../services/nativeHaptics";
 import { useToast } from "../components/Toast";
 import { useConfirm } from "../components/ConfirmDialog";
+import { ConflictResolver } from "../components/ConflictResolver";
 import { Settings as SettingsIcon, User, Palette, Building2, Bell, Database, Info, Save, Trash2 } from "lucide-react";
 
 type Tab = "general" | "profile" | "appearance" | "tenant" | "notifications" | "data" | "about";
@@ -19,6 +20,7 @@ export default function Settings() {
   const toast = useToast();
   const confirm = useConfirm();
   const [tab, setTab] = useState<Tab>("profile");
+  const [conflictOpen, setConflictOpen] = useState(false);
 
   // Profile
   const [name, setName] = useState(user?.name ?? "");
@@ -399,6 +401,18 @@ export default function Settings() {
                   <Trash2 className="w-3 h-3" /> Clear all &amp; sign out
                 </button>
               </div>
+              <div className="p-3 bg-[#0F172A] border border-[#334155] rounded-lg space-y-2">
+                <p className="text-sm font-medium text-[#F8FAFC]">Sync conflicts</p>
+                <p className="text-xs text-[#94A3B8]">
+                  {offlineSync.getUnresolvedConflicts().length} unresolved conflict(s) from offline writes.
+                </p>
+                <button
+                  onClick={() => setConflictOpen(true)}
+                  className="px-3 py-1.5 text-xs bg-[#1E293B] border border-[#334155] rounded text-[#94A3B8] hover:text-[#F8FAFC]"
+                >
+                  Review conflicts
+                </button>
+              </div>
               <p className="text-xs text-[#64748B]">
                 Online status: <span className="text-[#F8FAFC]">{typeof navigator !== "undefined" && navigator.onLine ? "Online" : "Offline"}</span>
                 {isNative() && " (native)"}
@@ -423,6 +437,7 @@ export default function Settings() {
           </>
         )}
       </div>
+      <ConflictResolver open={conflictOpen} onOpenChange={setConflictOpen} />
     </div>
   );
 }

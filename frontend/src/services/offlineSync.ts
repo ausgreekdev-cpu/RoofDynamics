@@ -30,6 +30,16 @@ export interface SyncStatus {
   lastSyncAt: string | null;
 }
 
+export interface Conflict {
+  id: string;
+  endpoint: string;
+  method: string;
+  local: any;
+  server: any;
+  timestamp: number;
+  resolved: boolean;
+}
+
 class OfflineSyncEngine {
   private db: IDBDatabase | null = null;
   private isOnline = navigator.onLine;
@@ -288,6 +298,40 @@ class OfflineSyncEngine {
       isSyncing: this.isSyncing,
       lastSyncAt: this.lastSyncAt,
     };
+  }
+
+  private conflictsKey = "rd_conflicts";
+
+  getConflicts(): Conflict[] {
+    try {
+      const raw = localStorage.getItem(this.conflictsKey);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  addConflict(conflict: Omit<Conflict, "id" | "timestamp" | "resolved">): string {
+    const id = `conflict-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const list = this.getConflicts();
+    list.push({ ...conflict, id, timestamp: Date.now(), resolved: false });
+    localStorage.setItem(this.conflictsKey, JSON.stringify(list));
+    return id;
+  }
+
+  resolveConflict(id: string): void {
+    const list = this.getConflicts().map((c) =>
+      c.id === id ? { ...c, resolved: true } : c
+    );
+    localStorage.setItem(this.conflictsKey, JSON.stringify(list));
+  }
+
+  clearConflicts(): void {
+    localStorage.removeItem(this.conflictsKey);
+  }
+
+  getUnresolvedConflicts(): Conflict[] {
+    return this.getConflicts().filter((c) => !c.resolved);
   }
 }
 
