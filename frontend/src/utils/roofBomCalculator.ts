@@ -115,7 +115,7 @@ function isDarlingScarpSuburb(suburb?: string): boolean {
 }
 
 /** AS 3959 BAL rating for bushfire-prone suburbs. */
-function balRatingFor(suburb?: string): BalRating {
+export function balRatingFor(suburb?: string): BalRating {
   const s = normaliseSuburb(suburb);
   if (BAL_29_SUBURBS.includes(s)) return "BAL-29";
   if (BAL_19_SUBURBS.includes(s)) return "BAL-19";

@@ -3,7 +3,7 @@
 import React from 'react'
 import { FeatureGate } from '../components/FeatureGate'
 import { RoleGuard } from '../features/auth'
-import { ComplianceTracker } from '../features/compliance'
+import { ComplianceTracker, BalReport } from '../features/compliance'
 
 export default function Compliance() {
   return (
@@ -17,6 +17,7 @@ export default function Compliance() {
             </p>
           </div>
           <div data-tour="compliance"><ComplianceTracker /></div>
+          <BalReport />
         </div>
       </RoleGuard>
     </FeatureGate>
