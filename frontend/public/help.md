@@ -294,4 +294,48 @@ All saves use in-app toast feedback; destructive actions use a confirmation dial
 
 ---
 
+## 24. Agents, Skills, Automations & Workflows
+
+### 24.1 AI agents (Executive BI)
+Four autonomous agents run via `aiAgentService.ts` (local LLM or deterministic fallback):
+- **Procurement & RFQ agent** — generates RFQs from stock shortages.
+- **WHS & licence watchdog** — flags unsigned SWMS / expired harness inspections.
+- **OCR bill matcher** — 3-way match of supplier invoices to POs and dockets.
+- **Social/SEO agent** — geo-tagged Perth suburb posts (before/after).
+- **AI quote drafter** (Wave 3.1) — turns a CRM lead + aerial measurement into a
+  branded quote draft.
+
+Run individually or via **Run All Empire Automations**. Routed to an
+OpenAI-compatible endpoint (`http://localhost:1234/v1`) with deterministic TS
+fallback.
+
+### 24.2 Agent skills (OpenCode)
+Project skills live under `.opencode/skills/` and are loaded on demand:
+- `agents-sdk`, `durable-objects`, `workers-best-practices`, `wrangler`,
+  `cloudflare`, `supabase-server`, `web-perf`, etc.
+- Each skill provides specialised instructions for a domain; invoke with the
+  `skill` tool when a task matches.
+
+### 24.3 Automations (Inngest workers)
+Async workers in `backend/src/server/queues/`:
+- `ai-segmentation` — roof segmentation from measurement images.
+- `pdf-compile` — report PDF compilation.
+- `csv-batch` — project CSV batch import.
+- `supplier-price-sync` (Wave 1.1) — pulls supplier catalogs on schedule.
+Triggered by events (`measurement/segmentation.requested`, etc.) or cron.
+
+### 24.4 Workflows (offline & sync)
+- **Offline write queue** — mutations queue in IndexedDB and replay on reconnect.
+- **Cached reads** — GETs served from cache when offline.
+- **Conflict resolution** (Wave 1.3) — field-level merge UI when queued writes
+  collide with server state (keep local / keep server / merge).
+- **Native sync** — Capacitor network listener triggers sync on reconnect.
+
+### 24.5 Triggers & integrations
+- Stripe webhooks (billing), Supabase auth events, Socket.io real-time updates.
+- Typed adapters in `backend/src/server/integrations/` (ABC Supply, Beacon,
+  Xero, Storm/Hail lookup) with deterministic sandbox mocks.
+
+---
+
 *RoofDynamics — Powered by AusGreek Developments.*

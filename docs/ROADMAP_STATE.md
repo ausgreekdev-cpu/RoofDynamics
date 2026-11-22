@@ -1085,3 +1085,24 @@ Frontend build pass; frontend tests **134 passed**; Playwright E2E **6/6**
 Frontend build pass; frontend tests **140 passed**; Playwright E2E **17 passed**;
 backend tests **92 passed**; backend tsc clean. Deployed to
 https://roofdynamics.netlify.app (commit dbbc6d3).
+
+---
+
+## Agents, Skills, Automations & Workflows
+
+### Agents (AI)
+- 4 Executive BI agents (Procurement RFQ, WHS watchdog, OCR bill match, Social/SEO)
+  + AI Quote Drafter (Wave 3.1). Routed via `aiAgentService.ts` to OpenAI-compatible
+  endpoint with deterministic TS fallback.
+
+### Skills (OpenCode)
+- Project skills in `.opencode/skills/`: agents-sdk, durable-objects,
+  workers-best-practices, wrangler, cloudflare, supabase-server, web-perf, etc.
+
+### Automations (Inngest)
+- Workers: ai-segmentation, pdf-compile, csv-batch, supplier-price-sync.
+- Triggers: events + cron. See `backend/src/server/queues/`.
+
+### Workflows (offline & sync)
+- Offline write queue (IndexedDB), cached reads, conflict resolution (Wave 1.3),
+  native network-triggered sync.
