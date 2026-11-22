@@ -159,6 +159,32 @@ class DeterministicAgentEngine {
       executionTimeMs: Date.now() - start,
     };
   }
+
+  async runQuoteDrafterAgent(data: any): Promise<AgentResult> {
+    const start = Date.now();
+    const lead = data.lead || {};
+    const measurement = data.measurement || {};
+    const planArea = Number(measurement.planArea || measurement.trueArea || 100);
+    const pitch = Number(measurement.pitch || 22);
+    const trueArea = Math.round(planArea * (1 / Math.cos((pitch * Math.PI) / 180)) * 1.07);
+    const rate = 85; // $/m² installed
+    const total = Math.round(trueArea * rate);
+    const lineItems = [
+      { description: "Colorbond Corrugated Roofing (supply & install)", qty: trueArea, unit: "m²", unitPrice: rate, total },
+      { description: "Ridge capping & flashings", qty: 1, unit: "lot", unitPrice: Math.round(total * 0.08), total: Math.round(total * 0.08) },
+      { description: "Gutter & downpipe (roof plumbing)", qty: 1, unit: "lot", unitPrice: Math.round(total * 0.12), total: Math.round(total * 0.12) },
+    ];
+    const grandTotal = lineItems.reduce((s, l) => s + l.total, 0);
+    const quoteText = `Quote for ${lead.name || "Customer"}\nSuburb: ${lead.suburb || "Perth"}\n\n${lineItems.map((l) => `${l.description} — ${l.qty} ${l.unit} @ $${l.unitPrice} = $${l.total}`).join("\\n")}\n\nTotal (ex GST): $${grandTotal}\nGST (10%): $${Math.round(grandTotal * 0.1)}\nTotal (inc GST): $${Math.round(grandTotal * 1.1)}\n\nTerms: 6.5% deposit, balance on completion. 10-year workmanship warranty.`;
+    return {
+      agentId: "quote_drafter",
+      agentName: "AI Quote Drafter",
+      success: true,
+      data: { lineItems, grandTotal, quoteText, lead, measurement },
+      message: `Drafted quote: $${grandTotal} (ex GST)`,
+      executionTimeMs: Date.now() - start,
+    };
+  }
 }
 
 /**
@@ -285,6 +311,26 @@ export class AIAgentService {
       }
     }
     return this.deterministic.runOCRBillMatchAgent(data);
+  }
+
+  async runQuoteDrafterAgent(data: any): Promise<AgentResult> {
+    if (this.useLLM) {
+      try {
+        const prompt = `Draft a roofing quote. Lead: ${JSON.stringify(data.lead)}. Measurement: ${JSON.stringify(data.measurement)}. Return JSON with lineItems, total, and terms.`;
+        const result = await this.llm.runAgent(prompt);
+        return {
+          agentId: "quote_drafter",
+          agentName: "AI Quote Drafter (LLM)",
+          success: true,
+          data: { llmResult: result },
+          message: "Quote drafted via local LLM",
+          executionTimeMs: 0,
+        };
+      } catch {
+        // Fall through to deterministic
+      }
+    }
+    return this.deterministic.runQuoteDrafterAgent(data);
   }
 
   async runSocialMediaSEOAgent(data: any): Promise<AgentResult> {

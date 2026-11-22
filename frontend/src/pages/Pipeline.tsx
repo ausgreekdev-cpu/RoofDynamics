@@ -3,7 +3,7 @@
 import React from 'react'
 import { FeatureGate } from '../components/FeatureGate'
 import { RoleGuard } from '../features/auth'
-import { PipelineBoard, FinancingWidget, StormLookup } from '../features/crm'
+import { PipelineBoard, FinancingWidget, StormLookup, QuoteDrafter } from '../features/crm'
 
 export default function Pipeline() {
   return (
@@ -17,6 +17,7 @@ export default function Pipeline() {
             </p>
           </div>
           <div data-tour="pipeline-board"><PipelineBoard /></div>
+          <QuoteDrafter />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FinancingWidget />
             <StormLookup />
