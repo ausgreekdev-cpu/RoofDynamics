@@ -113,6 +113,15 @@ export default function WMSMRP() {
     }
   };
 
+  const syncPrices = async () => {
+    try {
+      const result = await api.syncSupplierPrices();
+      toast.showToast("success", `Synced ${result.count} supplier prices`);
+    } catch (err: any) {
+      toast.showToast("error", err?.message || "Price sync failed");
+    }
+  };
+
   const lowStock = stockItems.filter(
     (item) => Number(item.quantityOnHand) <= Number(item.reorderPoint)
   );
@@ -224,6 +233,11 @@ export default function WMSMRP() {
         )}
 
         {/* Stock Table */}
+        <div className="flex justify-end mb-2">
+          <button onClick={syncPrices} className="flex items-center gap-2 px-3 py-1.5 text-xs bg-[#0EA5E9] text-[#0F172A] font-bold rounded-lg hover:bg-[#38BDF8] transition">
+            <RefreshCw className="w-3.5 h-3.5" /> Sync Supplier Prices
+          </button>
+        </div>
         <div data-tour="stock-table">
         <DataTable
           data={stockItems}

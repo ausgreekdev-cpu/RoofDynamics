@@ -1,0 +1,52 @@
+[
+  {
+    "sku": "CB-CORR",
+    "name": "Colorbond Corrugated Sheet",
+    "category": "Roofing",
+    "unitPrice": 32,
+    "unit": "EA",
+    "inStock": true,
+    "provider": "Beacon (Sandbox)",
+    "syncedAt": "2026-11-22T05:37:55.551Z"
+  },
+  {
+    "sku": "CB-ULTRA",
+    "name": "Colorbond Ultra Sheet (Coastal)",
+    "category": "Roofing",
+    "unitPrice": 45,
+    "unit": "EA",
+    "inStock": true,
+    "provider": "Beacon (Sandbox)",
+    "syncedAt": "2026-11-22T05:37:55.551Z"
+  },
+  {
+    "sku": "BATT-40",
+    "name": "Topspan 40mm Batten",
+    "category": "Structural",
+    "unitPrice": 8.5,
+    "unit": "LF",
+    "inStock": true,
+    "provider": "Beacon (Sandbox)",
+    "syncedAt": "2026-11-22T05:37:55.551Z"
+  },
+  {
+    "sku": "ANTICON-60",
+    "name": "Anticon 60mm Blanket",
+    "category": "Insulation",
+    "unitPrice": 65,
+    "unit": "EA",
+    "inStock": true,
+    "provider": "Beacon (Sandbox)",
+    "syncedAt": "2026-11-22T05:37:55.551Z"
+  },
+  {
+    "sku": "GUTTER-150",
+    "name": "150mm Quad Gutter",
+    "category": "Roof Plumbing",
+    "unitPrice": 25,
+    "unit": "LF",
+    "inStock": false,
+    "provider": "Beacon (Sandbox)",
+    "syncedAt": "2026-11-22T05:37:55.551Z"
+  }
+]

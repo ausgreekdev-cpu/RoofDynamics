@@ -104,6 +104,16 @@ class ApiService {
   }
 
   // ============================================================
+  // Supplier prices (Wave 1.1)
+  // ============================================================
+  getSupplierPrices() {
+    return this.request<any[]>("/supplier-prices");
+  }
+  syncSupplierPrices() {
+    return this.request<{ count: number; providers: string[] }>("/supplier-prices/sync", { method: "POST" });
+  }
+
+  // ============================================================
   // Users (profile)
   // ============================================================
   getUser() {

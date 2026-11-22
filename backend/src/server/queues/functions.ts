@@ -1,6 +1,7 @@
 /** Inngest worker functions for async AI, PDF and CSV workloads. */
 import { inngest } from './inngest'
 import { prisma } from '../../lib/prisma'
+import { syncSupplierPrices } from '../services/supplierPriceCache'
 
 export const segmentationWorker = inngest.createFunction(
   {
@@ -96,4 +97,16 @@ export const csvBatchWorker = inngest.createFunction(
   }
 )
 
-export const functions = [segmentationWorker, pdfCompileWorker, csvBatchWorker]
+export const supplierPriceSyncWorker = inngest.createFunction(
+  {
+    id: 'supplier-price-sync',
+    name: 'Supplier Price Sync',
+    triggers: [{ event: 'supplier/prices.sync.requested' }],
+  },
+  async ({ event, step }) => {
+    const result = await step.run('sync-prices', async () => syncSupplierPrices())
+    return result
+  }
+)
+
+export const functions = [segmentationWorker, pdfCompileWorker, csvBatchWorker, supplierPriceSyncWorker]

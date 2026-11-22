@@ -58,6 +58,8 @@ export interface RoofBOMInputs {
   suburb?: string;
   /** Legacy flag — forces high-wind fastener rate */
   isCyclonicZone?: boolean;
+  /** Optional live cost overrides (Wave 1.1) keyed by item type, e.g. { "Colorbond Sheet": 34.5 } */
+  costOverrides?: Record<string, number>;
 }
 
 export interface RoofBOMResult {
@@ -274,6 +276,13 @@ export function calculateRoofBOM(inputs: RoofBOMInputs): RoofBOMResult {
     });
   }
 
+  const overrides = inputs.costOverrides || {};
+  const finalItems = items.map((it) => {
+    const o = overrides[it.itemType];
+    if (o === undefined) return it;
+    return { ...it, unitCost: o, totalCost: Math.round(it.quantity * o * 100) / 100 };
+  });
+
   return {
     pitchFactor: Math.round(pitchFactor * 1000) / 1000,
     trueArea: Math.round(trueArea * 100) / 100,
@@ -291,7 +300,7 @@ export function calculateRoofBOM(inputs: RoofBOMInputs): RoofBOMResult {
     emberGuardRequired,
     sarkingRequired,
     sheetRollingSchedule,
-    items,
+    items: finalItems,
   };
 }
 

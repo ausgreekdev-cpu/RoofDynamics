@@ -81,6 +81,28 @@ import geoRoutes from './server/routes/geo'
 app.use('/api/geo', geoRoutes)
 app.get('/api/system/ping', rateLimit(10, 60), (_req, res) => res.json({ pong: true }))
 
+// ============================================================
+// SUPPLIER PRICES (Wave 1.1)
+// ============================================================
+app.get('/api/supplier-prices', async (_req, res) => {
+  try {
+    const { getSupplierPrices } = await import('./server/services/supplierPriceCache.js')
+    res.json(getSupplierPrices())
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || 'Failed to load prices' })
+  }
+})
+
+app.post('/api/supplier-prices/sync', async (_req, res) => {
+  try {
+    const { syncSupplierPrices } = await import('./server/services/supplierPriceCache.js')
+    const result = await syncSupplierPrices()
+    res.json(result)
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || 'Sync failed' })
+  }
+})
+
 // Object storage (R2/S3 with sandbox fallback)
 import storageRoutes from './server/routes/storage'
 app.use('/api/storage', storageRoutes)
