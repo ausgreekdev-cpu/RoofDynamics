@@ -1,5 +1,5 @@
 /** Server-side RBAC matrix — authoritative. Mirrored in frontend/src/features/auth/rbac.ts. */
-export type Role = 'developer' | 'owner' | 'admin' | 'manager' | 'staff' | 'crew' | 'viewer'
+export type Role = 'developer' | 'owner' | 'admin' | 'manager' | 'staff' | 'crew' | 'viewer' | 'customer'
 
 export type Permission =
   | 'projects:read' | 'projects:write'
@@ -26,6 +26,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   staff: ['projects:read', 'measurement:read', 'reports:read', 'crm:read'],
   crew: ['projects:read', 'measurement:read', 'whs:sign'],
   viewer: ['projects:read', 'measurement:read', 'reports:read'],
+  customer: ['projects:read', 'reports:read'],
 }
 
 export function can(role: string | undefined, permission: Permission): boolean {
@@ -37,6 +38,6 @@ export function can(role: string | undefined, permission: Permission): boolean {
 
 export function normalizeRole(raw: unknown): Role {
   const value = String(raw ?? 'staff')
-  const valid: Role[] = ['developer', 'owner', 'admin', 'manager', 'staff', 'crew', 'viewer']
+  const valid: Role[] = ['developer', 'owner', 'admin', 'manager', 'staff', 'crew', 'viewer', 'customer']
   return (valid.includes(value as Role) ? value : 'staff') as Role
 }

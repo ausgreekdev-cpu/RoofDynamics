@@ -37,6 +37,7 @@ const Compliance = React.lazy(() => import("./pages/Compliance"));
 const Help = React.lazy(() => import("./pages/Help"));
 const DeveloperPortal = React.lazy(() => import("./pages/DeveloperPortal"));
 const Settings = React.lazy(() => import("./pages/Settings"));
+const CustomerPortal = React.lazy(() => import("./pages/CustomerPortal"));
 
 const PageLoader = () => (
   <div className="space-y-4">
@@ -98,6 +99,7 @@ function AppRouter() {
           <Route path="/help" element={<ErrorBoundary moduleName="Help"><Help /></ErrorBoundary>} />
           <Route path="/platform" element={<ErrorBoundary moduleName="Developer Platform"><DeveloperPortal /></ErrorBoundary>} />
           <Route path="/dev-tools" element={<ErrorBoundary moduleName="Developer Tools"><DeveloperPortal /></ErrorBoundary>} />
+          <Route path="/portal" element={<ErrorBoundary moduleName="Customer Portal"><CustomerPortal /></ErrorBoundary>} />
           <Route path="/settings" element={<ErrorBoundary moduleName="Settings"><Settings /></ErrorBoundary>} />
             </Routes>
           </Suspense>

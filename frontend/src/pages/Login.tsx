@@ -31,7 +31,8 @@ export default function Login() {
         if (response.ok) {
           const data = await response.json();
           login(data.token, data.user, data.tenant);
-          navigate(data.user?.role === "developer" ? "/platform" : "/dashboard");
+          const r = data.user?.role;
+          navigate(r === "developer" ? "/platform" : r === "customer" ? "/portal" : "/dashboard");
           return;
         }
       }
@@ -58,6 +59,7 @@ export default function Login() {
       const deriveRole = (e: string): string => {
         const lower = e.toLowerCase();
         if (lower.includes("dev@") || lower.endsWith("@ausgreekdev.com") || lower.includes("developer")) return "developer";
+        if (lower.includes("customer@")) return "customer";
         if (lower.includes("admin@") || lower.includes("owner@")) return "admin";
         if (lower.includes("manager@")) return "manager";
         if (lower.includes("crew@")) return "crew";
@@ -75,7 +77,8 @@ export default function Login() {
 
       const token = "demo-token-" + Date.now();
       login(token, userData as any, tenantData as any);
-      navigate(deriveRole(email) === "developer" ? "/platform" : "/dashboard");
+      const r2 = deriveRole(email);
+      navigate(r2 === "developer" ? "/platform" : r2 === "customer" ? "/portal" : "/dashboard");
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {
