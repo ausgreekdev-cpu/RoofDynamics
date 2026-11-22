@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 
 export interface Column<T> {
@@ -18,6 +19,8 @@ interface DataTableProps<T> {
   pageSize?: number;
   emptyMessage?: string;
   rowKey?: (row: T) => string;
+  /** When true and data is large, render a virtualized scrollable table. */
+  virtualize?: boolean;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -27,6 +30,7 @@ export function DataTable<T extends Record<string, any>>({
   pageSize = 10,
   emptyMessage = "No data available",
   rowKey = (row) => String(row.id),
+  virtualize = false,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -61,9 +65,6 @@ export function DataTable<T extends Record<string, any>>({
     });
   }, [filtered, sortKey, sortDir, columns]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
-  const pageData = sorted.slice(page * pageSize, (page + 1) * pageSize);
-
   const handleSort = (key: string) => {
     if (sortKey === key) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -73,6 +74,30 @@ export function DataTable<T extends Record<string, any>>({
     }
     setPage(0);
   };
+
+  const useVirtual = virtualize && sorted.length > pageSize;
+
+  const parentRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: useVirtual ? sorted.length : 0,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 44,
+    overscan: 5,
+    enabled: useVirtual,
+  });
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const pageData = sorted.slice(page * pageSize, (page + 1) * pageSize);
+
+  const renderRow = (row: T) => (
+    <tr key={rowKey(row)} className="border-b border-[#1E293B]/30 hover:bg-[#1E293B]/50 transition">
+      {columns.map((col) => (
+        <td key={col.key} className="px-4 py-3 text-sm text-[#F8FAFC]">
+          {col.render ? col.render(row) : row[col.key] != null ? String(row[col.key]) : "—"}
+        </td>
+      ))}
+    </tr>
+  );
 
   return (
     <div className="space-y-3">
@@ -101,55 +126,95 @@ export function DataTable<T extends Record<string, any>>({
 
       {/* Table */}
       <div className="bg-[#1E293B] border border-[#334155] rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-[#0F172A]/50">
-              <tr>
-                {columns.map((col) => (
-                  <th key={col.key} className="px-4 py-3 text-xs font-bold text-[#94A3B8] whitespace-nowrap">
-                    {col.sortable !== false ? (
-                      <button
-                        onClick={() => handleSort(col.key)}
-                        className="flex items-center gap-1 hover:text-[#F8FAFC] transition"
-                      >
-                        {col.header}
-                        {sortKey === col.key ? (
-                          sortDir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
-                        ) : (
-                          <ArrowUpDown className="w-3 h-3 opacity-40" />
-                        )}
-                      </button>
-                    ) : (
-                      col.header
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {pageData.map((row) => (
-                <tr key={rowKey(row)} className="border-b border-[#1E293B]/30 hover:bg-[#1E293B]/50 transition">
+        {useVirtual ? (
+          <div ref={parentRef} className="overflow-auto" style={{ maxHeight: 480 }}>
+            <table className="w-full text-left">
+              <thead className="bg-[#0F172A]/50 sticky top-0">
+                <tr>
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3 text-sm text-[#F8FAFC]">
-                      {col.render ? col.render(row) : row[col.key] != null ? String(row[col.key]) : "—"}
-                    </td>
+                    <th key={col.key} className="px-4 py-3 text-xs font-bold text-[#94A3B8] whitespace-nowrap">
+                      {col.sortable !== false ? (
+                        <button
+                          onClick={() => handleSort(col.key)}
+                          className="flex items-center gap-1 hover:text-[#F8FAFC] transition"
+                        >
+                          {col.header}
+                          {sortKey === col.key ? (
+                            sortDir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-40" />
+                          )}
+                        </button>
+                      ) : (
+                        col.header
+                      )}
+                    </th>
                   ))}
                 </tr>
-              ))}
-              {pageData.length === 0 && (
+              </thead>
+              <tbody style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+                {virtualizer.getVirtualItems().map((vRow) => {
+                  const row = sorted[vRow.index];
+                  return (
+                    <tr
+                      key={rowKey(row)}
+                      style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${vRow.start}px)` }}
+                      className="border-b border-[#1E293B]/30 hover:bg-[#1E293B]/50 transition"
+                    >
+                      {columns.map((col) => (
+                        <td key={col.key} className="px-4 py-3 text-sm text-[#F8FAFC]">
+                          {col.render ? col.render(row) : row[col.key] != null ? String(row[col.key]) : "—"}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-[#0F172A]/50">
                 <tr>
-                  <td colSpan={columns.length} className="px-4 py-8 text-center text-[#64748B]">
-                    {emptyMessage}
-                  </td>
+                  {columns.map((col) => (
+                    <th key={col.key} className="px-4 py-3 text-xs font-bold text-[#94A3B8] whitespace-nowrap">
+                      {col.sortable !== false ? (
+                        <button
+                          onClick={() => handleSort(col.key)}
+                          className="flex items-center gap-1 hover:text-[#F8FAFC] transition"
+                        >
+                          {col.header}
+                          {sortKey === col.key ? (
+                            sortDir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-40" />
+                          )}
+                        </button>
+                      ) : (
+                        col.header
+                      )}
+                    </th>
+                  ))}
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {pageData.map((row) => renderRow(row))}
+                {pageData.length === 0 && (
+                  <tr>
+                    <td colSpan={columns.length} className="px-4 py-8 text-center text-[#64748B]">
+                      {emptyMessage}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* Pagination */}
-      {sorted.length > pageSize && (
+      {/* Pagination (non-virtual only) */}
+      {!useVirtual && sorted.length > pageSize && (
         <div className="flex items-center justify-between">
           <span className="text-xs text-[#64748B]">
             Showing {page * pageSize + 1}–{Math.min((page + 1) * pageSize, sorted.length)} of {sorted.length}
