@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User, Tenant, AuthState } from "../types";
 import { env } from "../env";
@@ -83,6 +83,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
     setTenant(tenantData);
   }, []);
+
+  // Session hardening: validate token against backend on mount (non-sandbox only).
+  useEffect(() => {
+    if (env.VITE_USE_SANDBOX_API || !token) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/session", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!cancelled && (res.status === 401 || res.status === 403)) {
+          // Token invalid/expired — clear session
+          localStorage.removeItem("rd_token");
+          localStorage.removeItem("rd_user");
+          localStorage.removeItem("rd_tenant");
+          setToken(null);
+          setUser(null);
+          setTenant(null);
+        }
+      } catch {
+        // Network error — keep session (offline-first)
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [token]);
 
   const logout = useCallback(() => {
     localStorage.removeItem("rd_token");
