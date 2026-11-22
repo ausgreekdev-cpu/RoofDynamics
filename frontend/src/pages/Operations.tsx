@@ -4,6 +4,7 @@ import React from 'react'
 import { FeatureGate } from '../components/FeatureGate'
 import { RoleGuard } from '../features/auth'
 import { DispatchCalendar, SupplierPOs, SubTasks, WarrantyVault } from '../features/operations'
+import { DispatchMap } from '../features/operations/DispatchMap'
 
 export default function Operations() {
   return (
@@ -16,6 +17,7 @@ export default function Operations() {
               Weekly crew dispatch calendar and supplier purchase orders.
             </p>
           </div>
+          <DispatchMap />
           <DispatchCalendar />
           <SupplierPOs />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
