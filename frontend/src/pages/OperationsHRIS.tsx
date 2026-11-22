@@ -424,8 +424,40 @@ export default function OperationsHRIS() {
                 >
                   <Download className="w-4 h-4" /> Generate .ABA Bank File
                 </button>
-                <button className="px-4 py-2 bg-[#1E293B] border border-[#334155] text-[#94A3B8] rounded-lg text-sm hover:text-[#F8FAFC] transition">
-                  Preview STP JSON
+                <button
+                  onClick={() => {
+                    const blob = new Blob([JSON.stringify(payrollResult.stpJson, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "stp-phase2-payload.json";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("STP Phase 2 payload downloaded");
+                  }}
+                  className="px-4 py-2 bg-[#1E293B] border border-[#334155] text-[#94A3B8] rounded-lg text-sm hover:text-[#F8FAFC] transition"
+                >
+                  Export STP JSON
+                </button>
+                <button
+                  onClick={() => {
+                    const header = "crewMemberId,firstName,lastName,hoursWorked,ote,superGuarantee,paygWithholding,myLeaveLevy,netPay,isApprentice";
+                    const rows = payrollResult.lines.map((l: any) =>
+                      [l.crewMemberId, l.firstName, l.lastName, l.hoursWorked, l.ote, l.superGuarantee, l.paygWithholding, l.myLeaveLevy, l.netPay, "false"].join(",")
+                    );
+                    const csv = [header, ...rows].join("\\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "myleave-wa-quarterly-return.csv";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("MyLeave WA return downloaded");
+                  }}
+                  className="px-4 py-2 bg-[#F59E0B] text-[#0F172A] font-bold rounded-lg text-sm hover:bg-[#FBBF24] transition"
+                >
+                  <Download className="w-4 h-4 inline mr-1" /> Export MyLeave WA Return
                 </button>
               </div>
             </>
