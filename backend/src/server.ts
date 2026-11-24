@@ -834,16 +834,16 @@ app.get('/api/bas-returns/compute', async (req: TenantRequest, res) => {
     include: { invoice: true },
   })
 
-  const gstCollected = ledger.reduce((sum, l) => sum + Number(l.gstCollected), 0)
-  const gstPaid = ledger.reduce((sum, l) => sum + Number(l.gstPaid), 0)
+  const gstCollected = ledger.reduce((sum: number, l: any) => sum + Number(l.gstCollected), 0)
+  const gstPaid = ledger.reduce((sum: number, l: any) => sum + Number(l.gstPaid), 0)
   const netGst = gstCollected - gstPaid
 
   // Also get total sales and purchases from invoices
   const invoices = await prisma.invoice.findMany({
     where: { tenantId: req.tenantId!, status: { in: ['PAID', 'SENT'] } },
   })
-  const totalSales = invoices.reduce((sum, inv) => sum + Number(inv.totalIncGst), 0)
-  const totalPurchases = invoices.reduce((sum, inv) => sum + Number(inv.amount) * 0.7, 0) // estimated
+  const totalSales = invoices.reduce((sum: number, inv: any) => sum + Number(inv.totalIncGst), 0)
+  const totalPurchases = invoices.reduce((sum: number, inv: any) => sum + Number(inv.amount) * 0.7, 0) // estimated
 
   res.json({
     period: p,
@@ -1111,7 +1111,7 @@ app.get('/api/dashboard/summary', async (req: TenantRequest, res) => {
   ])
 
   const lowStock = stockItems.filter(
-    (item) => Number(item.quantityOnHand) <= Number(item.reorderPoint)
+    (item: any) => Number(item.quantityOnHand) <= Number(item.reorderPoint)
   ).length
 
   res.json({

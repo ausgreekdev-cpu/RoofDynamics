@@ -7,7 +7,7 @@
     "unit": "EA",
     "inStock": true,
     "provider": "Beacon (Sandbox)",
-    "syncedAt": "2026-11-24T09:36:37.725Z"
+    "syncedAt": "2026-11-24T09:48:29.205Z"
   },
   {
     "sku": "CB-ULTRA",
@@ -17,7 +17,7 @@
     "unit": "EA",
     "inStock": true,
     "provider": "Beacon (Sandbox)",
-    "syncedAt": "2026-11-24T09:36:37.725Z"
+    "syncedAt": "2026-11-24T09:48:29.205Z"
   },
   {
     "sku": "BATT-40",
@@ -27,7 +27,7 @@
     "unit": "LF",
     "inStock": true,
     "provider": "Beacon (Sandbox)",
-    "syncedAt": "2026-11-24T09:36:37.725Z"
+    "syncedAt": "2026-11-24T09:48:29.205Z"
   },
   {
     "sku": "ANTICON-60",
@@ -37,7 +37,7 @@
     "unit": "EA",
     "inStock": true,
     "provider": "Beacon (Sandbox)",
-    "syncedAt": "2026-11-24T09:36:37.725Z"
+    "syncedAt": "2026-11-24T09:48:29.205Z"
   },
   {
     "sku": "GUTTER-150",
@@ -47,6 +47,6 @@
     "unit": "LF",
     "inStock": false,
     "provider": "Beacon (Sandbox)",
-    "syncedAt": "2026-11-24T09:36:37.725Z"
+    "syncedAt": "2026-11-24T09:48:29.205Z"
   }
 ]
