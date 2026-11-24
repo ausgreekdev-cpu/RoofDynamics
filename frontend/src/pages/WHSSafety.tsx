@@ -49,8 +49,8 @@ export default function WHSSafety() {
       setActiveSWMS(null);
       setSignature(null);
       setSignerName("");
-    } catch (err: any) {
-      toast.showToast("error", err.message || "Failed to save signature");
+    } catch (err: unknown) {
+      toast.showToast("error", (err as Error)?.message || "Failed to save signature");
     }
   };
 
@@ -85,7 +85,7 @@ export default function WHSSafety() {
     setMobileMode(!mobileMode);
   };
 
-  const handleSignSWMS = (swms: any) => {
+  const handleSignSWMS = (swms: Record<string, unknown>) => {
     setActiveSWMS(swms);
   };
 

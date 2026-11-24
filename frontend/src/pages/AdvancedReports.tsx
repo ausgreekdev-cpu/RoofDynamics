@@ -10,10 +10,10 @@ export default function AdvancedReports() {
   const [reportType, setReportType] = useState("profit_loss");
   const [startDate, setStartDate] = useState("2026-01-01");
   const [endDate, setEndDate] = useState("2026-12-31");
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [stockItems, setStockItems] = useState<any[]>([]);
-  const [crew, setCrew] = useState<any[]>([]);
-  const [reportData, setReportData] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Array<Record<string, unknown>>>([]);
+  const [stockItems, setStockItems] = useState<Array<Record<string, unknown>>>([]);
+  const [crew, setCrew] = useState<Array<Record<string, unknown>>>([]);
+  const [reportData, setReportData] = useState<Array<Record<string, unknown>>>([]);
 
   useEffect(() => {
     loadData();
@@ -37,7 +37,7 @@ export default function AdvancedReports() {
   };
 
   const generateReport = () => {
-    let data: any[] = [];
+    let data: Array<Record<string, unknown>> = [];
     switch (reportType) {
       case "profit_loss":
         data = generateProfitLossReport(jobs);
@@ -57,7 +57,7 @@ export default function AdvancedReports() {
 
   const exportCSV = () => {
     if (reportData.length === 0) return;
-    generateReportCSV({ startDate, endDate, reportType: reportType as any }, reportData);
+    generateReportCSV({ startDate, endDate, reportType: reportType as any }, reportData as any);
   };
 
   const reportTypes = [

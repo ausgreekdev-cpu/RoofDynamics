@@ -52,7 +52,7 @@ export default function Settings() {
     try {
       await api.updateTenant({ abn: general.abn, builderRegNumber: general.builderReg, plumberLicence: general.plumberLicence });
       if (tenant) setTenant({ ...tenant, abn: general.abn, builderRegNumber: general.builderReg, plumberLicence: general.plumberLicence } as any);
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast.warning("Statutory IDs saved locally (backend unreachable)");
     }
     hapticNotification("success");
@@ -72,16 +72,16 @@ export default function Settings() {
     try {
       const updatedUser = await api.updateUser({ name, email });
       if (typeof localStorage !== "undefined" && user) {
-        localStorage.setItem("rd_user", JSON.stringify({ ...(user as any), ...(updatedUser as any), name }));
+        localStorage.setItem("rd_user", JSON.stringify({ ...(user as unknown as Record<string, unknown>), ...(updatedUser as unknown as Record<string, unknown>), name }));
       }
       await hapticNotification("success");
       toast.success("Profile saved");
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Fall back to local persistence if backend unreachable (offline-first)
       if (typeof localStorage !== "undefined" && user) {
         localStorage.setItem("rd_user", JSON.stringify({ ...user, name }));
       }
-      toast.warning(e?.message || "Saved locally (backend unreachable)");
+      toast.warning((e as Error)?.message || "Saved locally (backend unreachable)");
     } finally {
       setSavingProfile(false);
     }
@@ -95,8 +95,8 @@ export default function Settings() {
       setTenant(updated as any);
       await hapticNotification("success");
       toast.success("Tenant settings saved");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save tenant settings");
+    } catch (e: unknown) {
+      toast.error((e as Error)?.message || "Failed to save tenant settings");
     } finally {
       setSavingTenant(false);
     }

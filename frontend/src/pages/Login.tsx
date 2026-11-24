@@ -79,8 +79,8 @@ export default function Login() {
       login(token, userData as any, tenantData as any);
       const r2 = deriveRole(email);
       navigate(r2 === "developer" ? "/platform" : r2 === "customer" ? "/portal" : "/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Login failed");
     } finally {
       setLoading(false);
     }

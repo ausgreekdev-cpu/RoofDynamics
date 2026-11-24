@@ -41,7 +41,7 @@ const MODULES = [
 export default function SaaSAdmin() {
   const { tenant, setTenant } = useAuth();
   const toast = useToast();
-  const [entitlements, setEntitlements] = useState<any[]>([]);
+  const [entitlements, setEntitlements] = useState<Array<Record<string, unknown>>>([]);
   const [mrr, setMrr] = useState(0);
 
   useEffect(() => {
@@ -93,8 +93,8 @@ export default function SaaSAdmin() {
           ),
         } as any);
       }
-    } catch (err: any) {
-      toast.showToast("error", err.message || "Failed to update module");
+    } catch (err: unknown) {
+      toast.showToast("error", (err as Error)?.message || "Failed to update module");
     }
   };
 
@@ -104,9 +104,9 @@ export default function SaaSAdmin() {
     try {
       await api.updateTenant({ subscriptionTier: tier });
       toast.showToast("success", `Subscription tier changed to ${tier}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setTenant(tenant);
-      toast.showToast("error", err.message || "Failed to update tier");
+      toast.showToast("error", (err as Error)?.message || "Failed to update tier");
     }
   };
 
@@ -123,8 +123,8 @@ export default function SaaSAdmin() {
       });
       setTenant({ ...tenant, ...(updated as any) } as any);
       toast.showToast("success", "White-label branding saved");
-    } catch (err: any) {
-      toast.showToast("error", err.message || "Failed to save branding");
+    } catch (err: unknown) {
+      toast.showToast("error", (err as Error)?.message || "Failed to save branding");
     }
   };
 
