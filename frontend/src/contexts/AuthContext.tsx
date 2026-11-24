@@ -61,7 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem("rd_tenant", JSON.stringify(parsed));
         }
         setTenant(parsed);
-      } catch {}
+      } catch {
+        // Corrupt tenant data — ignore
+      }
     } else if (env.VITE_USE_SANDBOX_API && localStorage.getItem("rd_token")) {
       const demoTenant = {
         id: "tenant-1",

@@ -33,7 +33,7 @@ class NotificationService {
   }
 
   async sendEmail(payload: EmailPayload): Promise<NotificationResult> {
-    console.log(`[Email] Sending to ${payload.to}: ${payload.subject}`);
+    // Email send (mock or production provider)
     // Mock implementation - in production, use Resend or SendGrid
     if (this.emailProvider === "mock") {
       await new Promise((r) => setTimeout(r, 500));
@@ -44,7 +44,7 @@ class NotificationService {
   }
 
   async sendSMS(payload: SMSPayload): Promise<NotificationResult> {
-    console.log(`[SMS] Sending to ${payload.to}: ${payload.message}`);
+    // SMS send (mock or production provider)
     // Mock implementation - in production, use Twilio
     if (this.smsProvider === "mock") {
       await new Promise((r) => setTimeout(r, 300));

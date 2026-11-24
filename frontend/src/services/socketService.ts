@@ -23,12 +23,11 @@ class SocketService {
     });
 
     this.socket.on("connect", () => {
-      console.log("Socket connected:", this.socket?.id);
       this.socket?.emit("join-tenant", tenantId);
     });
 
     this.socket.on("disconnect", () => {
-      console.log("Socket disconnected");
+      // Connection lost — will auto-reconnect
     });
 
     // Re-register all listeners
