@@ -78,11 +78,13 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST /api/projects
 router.post('/', requirePermission('projects:write'), async (req: Request, res: Response) => {
   const r = req as RbacRequest
-  const { name, customerName, customerEmail, address, suburb, state, postcode, status, coastalZone, pitchDegrees, planArea, notes } = req.body
-  if (!name || !customerName) {
-    res.status(400).json({ error: 'name and customerName are required' })
+  const { CreateProjectSchema } = await import('../../schemas/projects.js')
+  const parsed = CreateProjectSchema.safeParse(req.body)
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Validation failed', issues: parsed.error.issues })
     return
   }
+  const { name, customerName, customerEmail, address, suburb, state, postcode, status, coastalZone, pitchDegrees, planArea, notes } = parsed.data
   let project: any
   try {
     project = await prisma.project.create({

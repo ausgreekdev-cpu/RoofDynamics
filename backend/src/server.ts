@@ -340,7 +340,13 @@ app.get('/api/leads', async (req: TenantRequest, res) => {
 })
 
 app.post('/api/leads', async (req: TenantRequest, res) => {
-  const { firstName, lastName, email, phone, suburb, status, source, estimatedValue, notes } = req.body
+  const { CreateLeadSchema } = await import('./schemas/leads.js')
+  const parsed = CreateLeadSchema.safeParse(req.body)
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Validation failed', issues: parsed.error.issues })
+    return
+  }
+  const { firstName, lastName, email, phone, suburb, status, source, estimatedValue, notes } = parsed.data
   const lead = await prisma.lead.create({
     data: {
       tenantId: req.tenantId!,
@@ -349,9 +355,9 @@ app.post('/api/leads', async (req: TenantRequest, res) => {
       email,
       phone,
       suburb,
-      status,
+      status: status as any,
       source,
-      estimatedValue: estimatedValue ? parseFloat(estimatedValue) : 0,
+      estimatedValue: estimatedValue ?? 0,
       notes,
     },
   })
