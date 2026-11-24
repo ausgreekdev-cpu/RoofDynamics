@@ -6,6 +6,7 @@ import { api } from "../services/api";
 import { FeatureGate } from "../components/FeatureGate";
 import { useToast } from "../components/Toast";
 import { StockItemSchema } from "../schemas";
+import { useNavigate } from "react-router-dom";
 import { DataTable, type Column } from "../components/DataTable";
 import {
   Package,
@@ -51,6 +52,7 @@ interface PurchaseOrder { id: string; rfqId?: string; supplier: string; total: n
 
 export default function WMSMRP() {
   const toast = useToast();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>();
   const { data: queriedStock } = useQuery({
@@ -113,7 +115,7 @@ export default function WMSMRP() {
   const [loading, setLoading] = useState(false);
 
   const stockColumns: Column<StockItem>[] = [
-    { key: "sku", header: "SKU", render: (r) => <span className="text-[#94A3B8]">{r.sku}</span> },
+    { key: "sku", header: "SKU", render: (r) => <a href={`/profile/stock/${r.id}`} onClick={(e) => { e.preventDefault(); navigate(`/profile/stock/${r.id}`) }} className="text-[#0EA5E9] hover:underline">{r.sku}</a> },
     { key: "name", header: "Item Name", render: (r) => <span className="font-medium">{r.name}</span> },
     { key: "location", header: "Location", render: (r) => <span className="text-[#94A3B8]">{r.location}</span> },
     { key: "quantityOnHand", header: "On Hand", render: (r) => <span className="font-medium">{r.quantityOnHand}</span>, sortValue: (r) => Number(r.quantityOnHand) },

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Card, CardContent } from '../../components/ui/card'
@@ -15,12 +16,13 @@ import type { Project } from './types'
 
 export function ProjectsList() {
   const { projects, loading, error, create, remove } = useProjects()
+  const navigate = useNavigate()
   const confirm = useConfirm()
   const [wizardOpen, setWizardOpen] = useState(false)
   const [auditId, setAuditId] = useState<string | null>(null)
 
   const columns: Column<Project>[] = [
-    { key: 'name', header: 'Project', render: (p) => <span className="font-medium">{p.name}</span> },
+    { key: 'name', header: 'Project', render: (p) => <a href={`/profile/project/${p.id}`} onClick={(e) => { e.preventDefault(); navigate(`/profile/project/${p.id}`) }} className="font-medium text-[#0EA5E9] hover:underline">{p.name}</a> },
     { key: 'customerName', header: 'Customer', render: (p) => <span className="text-[var(--muted-foreground)]">{p.customerName}</span> },
     { key: 'suburb', header: 'Suburb', render: (p) => p.suburb || '—' },
     {

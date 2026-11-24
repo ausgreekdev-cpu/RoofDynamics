@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../../services/api'
 import { useToast } from '../../components/Toast'
 import { Card, CardContent } from '../../components/ui/card'
@@ -15,6 +16,7 @@ import { OfferSigner } from './OfferSigner'
 
 export function PipelineBoard() {
   const toast = useToast()
+  const navigate = useNavigate()
   const [deals, setDeals] = useState<Deal[]>([])
   const [signing, setSigning] = useState<Deal | null>(null)
   const [newLeadOpen, setNewLeadOpen] = useState(false)
@@ -105,7 +107,7 @@ export function PipelineBoard() {
                     onDragStart={(e) => e.dataTransfer.setData('text/plain', deal.id)}
                     className="p-2 rounded border border-[var(--border)] bg-[var(--background)] cursor-grab"
                   >
-                    <p className="text-sm font-medium truncate">{deal.name}</p>
+                    <a href={`/profile/lead/${deal.id}`} onClick={(e) => { e.preventDefault(); navigate(`/profile/lead/${deal.id}`) }} className="text-sm font-medium truncate text-[#0EA5E9] hover:underline">{deal.name}</a>
                     <p className="text-xs text-[var(--muted-foreground)]">{deal.suburb}</p>
                     <p className="text-xs font-bold mt-1">${deal.estimatedValue.toLocaleString()}</p>
                     {stage === 'NEGOTIATION' && (

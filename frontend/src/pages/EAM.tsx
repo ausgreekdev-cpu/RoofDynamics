@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { scheduleReminder } from "../services/nativeNotifications";
 import { hapticNotification } from "../services/nativeHaptics";
@@ -26,6 +27,7 @@ function hashCode(s: string): number {
 
 export default function EAM() {
   const toast = useToast();
+  const navigate = useNavigate();
   const [equipment, setEquipment] = useState<any[]>([]);
   const [harnesses, setHarnesses] = useState<any[]>([]);
   const [inspections, setInspections] = useState<any[]>([]);
@@ -158,7 +160,7 @@ export default function EAM() {
                 <tbody>
                   {equipment.map((item) => (
                     <tr key={item.id} className="border-b border-[#1E293B]/30">
-                      <td className="px-4 py-3 text-sm text-[#F8FAFC]">{item.name}</td>
+                      <td className="px-4 py-3 text-sm text-[#F8FAFC]"><a href={`/profile/equipment/${item.id}`} onClick={(e) => { e.preventDefault(); navigate(`/profile/equipment/${item.id}`) }} className="text-[#0EA5E9] hover:underline">{item.name}</a></td>
                       <td className="px-4 py-3 text-sm text-[#94A3B8]">{item.assetType.replace(/_/g, " ")}</td>
                       <td className="px-4 py-3 text-sm text-[#94A3B8]">{item.serialNumber}</td>
                       <td className="px-4 py-3 text-sm text-[#94A3B8]">{item.location?.replace(/_/g, " ") || "—"}</td>
