@@ -81,5 +81,20 @@ export const generateToken = (payload: {
   email: string
   role: string
 }): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: env.ACCESS_TOKEN_EXPIRY as any })
+}
+
+export const generateRefreshToken = (payload: {
+  userId: string
+  tenantId: string
+}): string => {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: env.REFRESH_TOKEN_EXPIRY as any })
+}
+
+export const verifyToken = (token: string): any => {
+  try {
+    return jwt.verify(token, JWT_SECRET)
+  } catch {
+    return null
+  }
 }

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import { prisma } from '../lib/prisma'
-import { generateToken } from '../middleware/auth'
+import { generateToken, generateRefreshToken, verifyToken } from '../middleware/auth'
 
 // Demo/seeded fallback used when the database is unavailable (offline-first / sandbox).
 const DEMO_TENANT = {
@@ -95,9 +95,11 @@ router.post('/login', async (req: Request, res: Response) => {
       email: user.email,
       role: user.role,
     })
+    const refreshToken = generateRefreshToken({ userId: user.id, tenantId: user.tenantId })
 
     res.json({
       token,
+      refreshToken,
       user: {
         id: user.id,
         tenantId: user.tenantId,
@@ -117,8 +119,10 @@ router.post('/login', async (req: Request, res: Response) => {
         email: String(email),
         role: 'admin',
       })
+      const refreshToken = generateRefreshToken({ userId: 'demo-user', tenantId: tid })
       return res.json({
         token,
+        refreshToken,
         user: { id: 'demo-user', tenantId: tid, email: String(email), name: 'Demo User', role: 'admin' },
         tenant: tid === 'tenant-1' ? DEMO_TENANT : { ...DEMO_TENANT, id: tid, name: 'Demo Tenant' },
       })
@@ -215,6 +219,28 @@ router.get('/me', async (req: Request, res: Response) => {
   }
 
   res.status(401).json({ error: 'Invalid token' })
+})
+
+// POST /api/auth/refresh — exchange refresh token for new access token
+router.post('/refresh', async (req: Request, res: Response) => {
+  const { refreshToken } = req.body || {}
+  if (!refreshToken) {
+    res.status(400).json({ error: 'refreshToken is required' })
+    return
+  }
+  const payload = verifyToken(refreshToken)
+  if (!payload) {
+    res.status(403).json({ error: 'Invalid or expired refresh token' })
+    return
+  }
+  const newToken = generateToken({
+    userId: payload.userId,
+    tenantId: payload.tenantId,
+    email: payload.email || '',
+    role: payload.role || 'staff',
+  })
+  const newRefresh = generateRefreshToken({ userId: payload.userId, tenantId: payload.tenantId })
+  res.json({ token: newToken, refreshToken: newRefresh })
 })
 
 // PUT /api/auth/change-password

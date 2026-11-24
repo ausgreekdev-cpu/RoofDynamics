@@ -21,6 +21,8 @@ const schema = z.object({
   // Core (currently used)
   DATABASE_URL: optionalUrl,
   JWT_SECRET: z.string().min(1).default('roofdynamics-dev-secret-change-in-production'),
+  ACCESS_TOKEN_EXPIRY: z.string().default('15m'),
+  REFRESH_TOKEN_EXPIRY: z.string().default('7d'),
   PORT: z.coerce.number().int().min(1).max(65535).default(5000),
   CLIENT_URL: z.string().url().default('http://localhost:5173'),
   AI_LLM_ENDPOINT: optionalUrl,
