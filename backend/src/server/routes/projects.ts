@@ -6,6 +6,7 @@
 import { Router, type Request, type Response } from 'express'
 import { prisma } from '../../lib/prisma'
 import { requirePermission, type RbacRequest } from '../auth/middleware'
+import { rateLimit } from '../cache'
 
 const router = Router()
 
@@ -216,7 +217,7 @@ router.get('/:projectId/whs-swms', async (req: Request, res: Response) => {
 })
 
 // POST /api/projects/:projectId/whs-swms/sync — idempotent
-router.post('/:projectId/whs-swms/sync', async (req: Request, res: Response) => {
+router.post('/:projectId/whs-swms/sync', rateLimit(20, 60), async (req: Request, res: Response) => {
   const r = req as RbacRequest
   const role = r.authRole
   if (!role || !['crew', 'manager', 'admin', 'owner', 'developer'].includes(role)) {
