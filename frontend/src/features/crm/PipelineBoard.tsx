@@ -6,7 +6,10 @@ import { useToast } from '../../components/Toast'
 import { Card, CardContent } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog'
+import { Input } from '../../components/ui/input'
 import { STAGES, type Deal } from './types'
+import { LeadSchema } from '../../schemas'
 import { leadToDeal, probabilityFor, weightedForecast, wonRevenue, canTransition } from './pipeline'
 import { OfferSigner } from './OfferSigner'
 
@@ -14,6 +17,8 @@ export function PipelineBoard() {
   const toast = useToast()
   const [deals, setDeals] = useState<Deal[]>([])
   const [signing, setSigning] = useState<Deal | null>(null)
+  const [newLeadOpen, setNewLeadOpen] = useState(false)
+  const [newLead, setNewLead] = useState({ firstName: '', lastName: '', email: '', phone: '', suburb: '', estimatedValue: '' })
 
   useEffect(() => {
     api.getLeads()
@@ -34,14 +39,34 @@ export function PipelineBoard() {
     try {
       await api.updateLead(deal.id, { status: stage })
       toast.showToast('success', `${deal.name} moved to ${stage}`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       setDeals((prev) => prev.map((d) => (d.id === deal.id ? { ...d, stage: previous, probability: probabilityFor(previous) } : d)))
-      toast.showToast('error', err.message || 'Failed to move deal')
+      toast.showToast('error', (err as Error)?.message || 'Failed to move deal')
+    }
+  }
+
+  const createLead = async () => {
+    const parsed = LeadSchema.safeParse(newLead)
+    if (!parsed.success) {
+      toast.showToast('error', parsed.error.issues[0]?.message || 'Invalid lead')
+      return
+    }
+    try {
+      const lead = await api.createLead({ ...parsed.data, status: 'NEW', source: 'manual', estimatedValue: Number(newLead.estimatedValue) || 0 })
+      setDeals((prev) => [...prev, leadToDeal(lead as any)])
+      setNewLeadOpen(false)
+      setNewLead({ firstName: '', lastName: '', email: '', phone: '', suburb: '', estimatedValue: '' })
+      toast.showToast('success', 'Lead created')
+    } catch (err: unknown) {
+      toast.showToast('error', (err as Error)?.message || 'Failed to create lead')
     }
   }
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button onClick={() => setNewLeadOpen(true)}>+ New Lead</Button>
+      </div>
       <div className="grid grid-cols-2 gap-3 max-w-md">
         <Card><CardContent className="p-4">
           <p className="text-xs text-[var(--muted-foreground)]">Weighted forecast</p>
@@ -103,6 +128,28 @@ export function PipelineBoard() {
           onCancel={() => setSigning(null)}
         />
       )}
+
+      <Dialog open={newLeadOpen} onOpenChange={setNewLeadOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Lead</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="First name" value={newLead.firstName} onChange={(e) => setNewLead({ ...newLead, firstName: e.target.value })} />
+              <Input placeholder="Last name" value={newLead.lastName} onChange={(e) => setNewLead({ ...newLead, lastName: e.target.value })} />
+            </div>
+            <Input type="email" placeholder="Email" value={newLead.email} onChange={(e) => setNewLead({ ...newLead, email: e.target.value })} />
+            <Input placeholder="Phone" value={newLead.phone} onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })} />
+            <Input placeholder="Suburb" value={newLead.suburb} onChange={(e) => setNewLead({ ...newLead, suburb: e.target.value })} />
+            <Input type="number" placeholder="Estimated value" value={newLead.estimatedValue} onChange={(e) => setNewLead({ ...newLead, estimatedValue: e.target.value })} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewLeadOpen(false)}>Cancel</Button>
+            <Button onClick={createLead}>Create Lead</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
