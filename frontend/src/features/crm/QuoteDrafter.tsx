@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, Download } from "lucide-react";
+import { Sparkles, Download, Save } from "lucide-react";
 import { aiAgentService } from "../../services/aiAgentService";
+import { api } from "../../services/api";
 import { useToast } from "../../components/Toast";
 
 export function QuoteDrafter() {
@@ -11,16 +12,19 @@ export function QuoteDrafter() {
   const [suburb, setSuburb] = useState("");
   const [planArea, setPlanArea] = useState("100");
   const [draft, setDraft] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const generate = async () => {
     setLoading(true);
     try {
-      const result = await aiAgentService.runQuoteDrafterAgent({
+      const res = await aiAgentService.runQuoteDrafterAgent({
         lead: { name: leadName, suburb },
         measurement: { planArea: Number(planArea), pitch: 22 },
       });
-      setDraft(result.data.quoteText);
+      setDraft(res.data.quoteText);
+      setResult(res.data);
       toast.success("Quote drafted");
     } catch (e: any) {
       toast.error(e?.message || "Draft failed");
@@ -38,6 +42,25 @@ export function QuoteDrafter() {
     a.download = "quote-draft.txt";
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const saveQuote = async () => {
+    if (!result) return;
+    setSaving(true);
+    try {
+      await api.createQuote({
+        leadId: null,
+        quoteNumber: `Q-${Date.now().toString().slice(-6)}`,
+        status: "DRAFT",
+        totalIncGst: (result.grandTotal || 0) * 1.1,
+        notes: result.quoteText,
+      });
+      toast.success("Quote saved");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to save quote");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -79,12 +102,21 @@ export function QuoteDrafter() {
           <pre className="text-xs text-[#94A3B8] whitespace-pre-wrap bg-[#0F172A] p-3 rounded-lg border border-[#334155] max-h-64 overflow-y-auto">
             {draft}
           </pre>
-          <button
-            onClick={download}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs bg-[#1E293B] border border-[#334155] rounded text-[#94A3B8] hover:text-[#F8FAFC]"
-          >
-            <Download className="w-3 h-3" /> Download draft
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={download}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs bg-[#1E293B] border border-[#334155] rounded text-[#94A3B8] hover:text-[#F8FAFC]"
+            >
+              <Download className="w-3 h-3" /> Download draft
+            </button>
+            <button
+              onClick={saveQuote}
+              disabled={saving}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs bg-[#0EA5E9] text-[#0F172A] font-bold rounded disabled:opacity-50"
+            >
+              <Save className="w-3 h-3" /> {saving ? "Saving…" : "Save as quote"}
+            </button>
+          </div>
         </div>
       )}
     </div>
