@@ -469,6 +469,55 @@ async function main() {
     ],
   });
 
+  // Tenant 1 WHS & SWMS (Working at Heights) sample
+  const project1 = await prisma.project.create({
+    data: {
+      tenantId: tenant1.id,
+      name: 'Fremantle Re-roof',
+      customerName: 'James Wilson',
+      customerEmail: 'james@example.com',
+      address: '12 Beach St',
+      suburb: 'Fremantle',
+      state: 'WA',
+      postcode: '6160',
+      status: 'IN_PROGRESS',
+      coastalZone: true,
+      pitchDegrees: 22,
+      planArea: 180,
+      notes: 'Working at heights SWMS required',
+    },
+  });
+  await prisma.whsSwmsDocument.create({
+    data: {
+      tenantId: tenant1.id,
+      projectId: project1.id,
+      title: 'Working at Heights SWMS — Fremantle Re-roof',
+      roofHeight: 6.5,
+      edgeProtectionRequired: true,
+      edgeProtectionVerified: true,
+      harnessInspectionVerified: true,
+      fragileRoofIdentified: true,
+      weatherAssessed: true,
+      exclusionZonesSet: true,
+      emergencyRescuePlan: true,
+      hazardNotes: 'Fragile skylights on north face; edge protection installed.',
+      controlMeasures: 'Harness + anchor points; buddy system; exclusion zone 3m.',
+      status: 'SIGNED_OFF',
+      signedAt: new Date(),
+      signOffs: {
+        create: [
+          {
+            tenantId: tenant1.id,
+            guestName: 'John Smith',
+            tradeLicense: 'WC-12345',
+            signatureDataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+            signedAt: new Date(),
+          },
+        ],
+      },
+    },
+  });
+
   // Tenant 2 stock
   await prisma.stockItem.createMany({
     data: [

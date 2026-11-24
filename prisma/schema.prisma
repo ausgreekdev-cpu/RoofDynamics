@@ -168,6 +168,8 @@ model Tenant {
   jobPhotos            JobPhoto[]
   projects             Project[]
   projectBatches       ProjectBatch[]
+  whsSwmsDocuments     WhsSwmsDocument[]
+  whsCrewSignOffs      WhsCrewSignOff[]
   tasks                Task[]
   warranties           WarrantyDocument[]
   paymentClaims        PaymentClaim[]
@@ -403,6 +405,7 @@ model Project {
   updatedAt     DateTime @updatedAt
 
   tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  whsSwmsDocuments WhsSwmsDocument[]
 
   @@index([tenantId])
   @@index([status])
@@ -978,4 +981,63 @@ model PayRunLine {
   @@index([payRunId])
   @@index([crewMemberId])
   @@map("pay_run_lines")
+}
+
+// ============================================================
+// Working at Heights WHS & SWMS Sign-Off (offline-first)
+// ============================================================
+model WhsSwmsDocument {
+  id                      String   @id @default(uuid())
+  tenantId                String
+  projectId               String
+  title                   String   @default("Working at Heights SWMS")
+  roofHeight              Decimal  @default(0)
+  edgeProtectionRequired  Boolean  @default(true)
+  edgeProtectionVerified  Boolean  @default(false)
+  harnessInspectionVerified Boolean @default(false)
+  fragileRoofIdentified   Boolean  @default(false)
+  weatherAssessed         Boolean  @default(false)
+  exclusionZonesSet       Boolean  @default(false)
+  emergencyRescuePlan     Boolean  @default(false)
+  hazardNotes             String?
+  controlMeasures         String?
+  status                  String   @default("DRAFT")
+  clientMutationId        String?  @unique
+  signedAt                DateTime?
+  gpsLat                  Float?
+  gpsLon                  Float?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  tenant                  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project                 Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  signOffs                WhsCrewSignOff[]
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@index([clientMutationId])
+  @@map("whs_swms_documents")
+}
+
+model WhsCrewSignOff {
+  id                String   @id @default(uuid())
+  tenantId          String
+  documentId        String
+  userId            String?
+  guestName         String?
+  tradeLicense      String?
+  signatureDataUrl  String
+  signedAt          DateTime
+  gpsLat            Float?
+  gpsLon            Float?
+  clientMutationId  String?  @unique
+  createdAt         DateTime @default(now())
+
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  document          WhsSwmsDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([documentId])
+  @@index([clientMutationId])
+  @@map("whs_crew_signoffs")
 }
