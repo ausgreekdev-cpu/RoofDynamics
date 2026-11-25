@@ -191,32 +191,45 @@ class OfflineSyncEngine {
     this.notifyListeners();
 
     const pendingWrites = await this.getPendingWrites();
+    const now = Date.now();
 
-    for (const write of pendingWrites) {
-      try {
-        const token = typeof localStorage !== "undefined" ? localStorage.getItem("rd_token") : null;
-        const tenantId = typeof localStorage !== "undefined" ? localStorage.getItem("rd_tenant_id") : null;
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        if (tenantId) headers["x-tenant-id"] = tenantId;
-        const response = await fetch(`${env.VITE_API_BASE}${write.endpoint}`, {
-          method: write.method,
-          headers,
-          body: write.body ? JSON.stringify(write.body) : undefined,
-        });
+    // Exponential backoff: skip writes that were retried recently
+    const eligible = pendingWrites.filter((w) => {
+      if (w.retries === 0) return true;
+      const backoffMs = Math.min(1000 * Math.pow(2, w.retries), 60000);
+      return now - w.timestamp >= backoffMs;
+    });
 
-        if (response.ok) {
-          // Remove from queue
-          await this.removeWrite(write.id);
-          this.lastSyncAt = new Date().toISOString();
-          void prefSet("lastSyncAt", this.lastSyncAt);
-        } else {
-          // Increment retry count
-          await this.incrementRetry(write.id);
-        }
-      } catch (err) {
-        await this.incrementRetry(write.id);
-      }
+    // Batch processing with concurrency limit of 3
+    const concurrency = 3;
+    for (let i = 0; i < eligible.length; i += concurrency) {
+      const batch = eligible.slice(i, i + concurrency);
+      await Promise.allSettled(
+        batch.map(async (write) => {
+          try {
+            const token = typeof localStorage !== "undefined" ? localStorage.getItem("rd_token") : null;
+            const tenantId = typeof localStorage !== "undefined" ? localStorage.getItem("rd_tenant_id") : null;
+            const headers: Record<string, string> = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+            if (tenantId) headers["x-tenant-id"] = tenantId;
+            const response = await fetch(`${env.VITE_API_BASE}${write.endpoint}`, {
+              method: write.method,
+              headers,
+              body: write.body ? JSON.stringify(write.body) : undefined,
+            });
+
+            if (response.ok) {
+              await this.removeWrite(write.id);
+              this.lastSyncAt = new Date().toISOString();
+              void prefSet("lastSyncAt", this.lastSyncAt);
+            } else {
+              await this.incrementRetry(write.id);
+            }
+          } catch {
+            await this.incrementRetry(write.id);
+          }
+        })
+      );
     }
 
     this.isSyncing = false;
