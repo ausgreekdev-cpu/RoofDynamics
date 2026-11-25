@@ -26,10 +26,13 @@ export function addBusinessDays(start: Date, days: number): Date {
 // ---- Payment Claims ----
 router.get('/payment-claims', async (req: Request, res: Response) => {
   const r = req as RbacRequest
+  const take = Math.min(parseInt(String(req.query.take || '50'), 10) || 50, 200)
+  const skip = parseInt(String(req.query.skip || '0'), 10) || 0
   try {
     const claims = await prisma.paymentClaim.findMany({
       where: { tenantId: r.tenantId },
       orderBy: { servedDate: 'desc' },
+      take, skip,
     })
     res.json(claims)
   } catch {
@@ -92,10 +95,13 @@ router.post('/payment-claims/refresh-status', requirePermission('billing:manage'
 // ---- Building Permits ----
 router.get('/building-permits', async (req: Request, res: Response) => {
   const r = req as RbacRequest
+  const take = Math.min(parseInt(String(req.query.take || '50'), 10) || 50, 200)
+  const skip = parseInt(String(req.query.skip || '0'), 10) || 0
   try {
     const permits = await prisma.buildingPermit.findMany({
       where: { tenantId: r.tenantId },
       orderBy: { createdAt: 'desc' },
+      take, skip,
     })
     res.json(permits)
   } catch {

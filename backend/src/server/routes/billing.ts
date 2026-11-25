@@ -11,10 +11,12 @@ const router = Router()
 router.get('/credits', async (req: Request, res: Response) => {
   const r = req as RbacRequest
   try {
-    const tenant = await prisma.tenant.findUnique({ where: { id: r.tenantId } })
+    const [tenant, used] = await Promise.all([
+      prisma.tenant.findUnique({ where: { id: r.tenantId } }),
+      prisma.project.count({ where: { tenantId: r.tenantId } }),
+    ])
     const tier = (tenant?.subscriptionTier || 'STARTER') as Tier
     const quota = tierCredits(tier)
-    const used = await prisma.project.count({ where: { tenantId: r.tenantId } })
     res.json({ tier, quota, used, remaining: Math.max(0, quota - used), provider: getBillingAdapter().name })
   } catch {
     const tier = 'EMPIRE_ENTERPRISE_LEASE' as Tier

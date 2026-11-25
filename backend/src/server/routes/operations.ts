@@ -10,11 +10,13 @@ const router = Router()
 router.get('/tasks', async (req: Request, res: Response) => {
   const r = req as RbacRequest
   const { jobId, status } = req.query
+  const take = Math.min(parseInt(String(req.query.take || '50'), 10) || 50, 200)
+  const skip = parseInt(String(req.query.skip || '0'), 10) || 0
   try {
     const where: any = { tenantId: r.tenantId }
     if (jobId) where.jobId = String(jobId)
     if (status) where.status = String(status)
-    const tasks = await prisma.task.findMany({ where, orderBy: { createdAt: 'desc' } })
+    const tasks = await prisma.task.findMany({ where, orderBy: { createdAt: 'desc' }, take, skip })
     res.json(tasks)
   } catch {
     res.json([
@@ -64,10 +66,13 @@ router.delete('/tasks/:id', requirePermission('operations:manage'), async (req: 
 // ---- Warranty Vault ----
 router.get('/warranties', async (req: Request, res: Response) => {
   const r = req as RbacRequest
+  const take = Math.min(parseInt(String(req.query.take || '50'), 10) || 50, 200)
+  const skip = parseInt(String(req.query.skip || '0'), 10) || 0
   try {
     const warranties = await prisma.warrantyDocument.findMany({
       where: { tenantId: r.tenantId },
       orderBy: { issuedAt: 'desc' },
+      take, skip,
     })
     res.json(warranties)
   } catch {

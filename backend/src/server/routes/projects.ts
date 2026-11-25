@@ -45,6 +45,8 @@ export async function audit(
 router.get('/', async (req: Request, res: Response) => {
   const r = req as RbacRequest
   const { status, search } = req.query
+  const take = Math.min(parseInt(String(req.query.take || '50'), 10) || 50, 200)
+  const skip = parseInt(String(req.query.skip || '0'), 10) || 0
   const where: any = { tenantId: r.tenantId }
   if (status) where.status = String(status)
   if (search) {
@@ -56,7 +58,7 @@ router.get('/', async (req: Request, res: Response) => {
   }
   let projects: any
   try {
-    projects = await prisma.project.findMany({ where, orderBy: { createdAt: 'desc' } })
+    projects = await prisma.project.findMany({ where, orderBy: { createdAt: 'desc' }, take, skip })
   } catch {
     projects = [
       { id: 'proj-1', tenantId: r.tenantId, name: 'Fremantle Re-roof', customerName: 'James Wilson', suburb: 'Fremantle', status: 'NEW', coastalZone: true, pitchDegrees: 22, planArea: 180, createdAt: new Date().toISOString() },
