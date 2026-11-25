@@ -41,6 +41,9 @@ const Settings = React.lazy(() => import("./pages/Settings"));
 const CustomerPortal = React.lazy(() => import("./pages/CustomerPortal"));
 const Onboarding = React.lazy(() => import("./pages/Onboarding"));
 const EntityProfile = React.lazy(() => import("./pages/EntityProfile"));
+const EmployeeProfile = React.lazy(() => import("./pages/EmployeeProfile"));
+const AssetProfile = React.lazy(() => import("./pages/AssetProfile"));
+const Account = React.lazy(() => import("./pages/Account"));
 
 const PageLoader = () => (
   <div className="space-y-4">
@@ -105,6 +108,9 @@ function AppRouter() {
           <Route path="/portal" element={<ErrorBoundary moduleName="Customer Portal"><CustomerPortal /></ErrorBoundary>} />
           <Route path="/onboarding" element={<ErrorBoundary moduleName="Onboarding"><Onboarding /></ErrorBoundary>} />
           <Route path="/profile/:type/:id" element={<ErrorBoundary moduleName="Entity Profile"><EntityProfile /></ErrorBoundary>} />
+          <Route path="/employee/:id" element={<ErrorBoundary moduleName="Employee Profile"><EmployeeProfile /></ErrorBoundary>} />
+          <Route path="/asset/:id" element={<ErrorBoundary moduleName="Asset Profile"><AssetProfile /></ErrorBoundary>} />
+          <Route path="/account" element={<ErrorBoundary moduleName="Account"><Account /></ErrorBoundary>} />
           <Route path="/settings" element={<ErrorBoundary moduleName="Settings"><Settings /></ErrorBoundary>} />
             </Routes>
           </Suspense>
