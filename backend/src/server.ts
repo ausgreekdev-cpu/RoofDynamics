@@ -178,18 +178,25 @@ app.get('/api/auth/session', (req: any, res) => {
 // ============================================================
 app.get('/api/users/me', async (req: TenantRequest, res) => {
   const userId = (req as any).userId
+  const cache = getCache()
+  const cacheKey = `user:${userId}`
+  const cached = await cache.get<any>(cacheKey)
+  if (cached) return res.json(cached)
   if (!userId || String(userId).startsWith('demo-')) {
-    return res.json({
+    const demo = {
       id: userId || 'demo-user',
       tenantId: req.tenantId,
       email: (req as any).userEmail || 'demo@roofdynamics.com.au',
       name: 'Demo User',
       role: (req as any).userRole || 'admin',
-    })
+    }
+    await cache.set(cacheKey, demo, 60)
+    return res.json(demo)
   }
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user) return res.status(404).json({ error: 'User not found' })
+    await cache.set(cacheKey, user, 60)
     res.json(user)
   } catch (e: any) {
     res.status(500).json({ error: e?.message || 'Failed to load profile' })
@@ -198,6 +205,7 @@ app.get('/api/users/me', async (req: TenantRequest, res) => {
 
 app.put('/api/users/me', async (req: TenantRequest, res) => {
   const userId = (req as any).userId
+  const cache = getCache()
   const { name, email } = req.body || {}
   if (!userId || String(userId).startsWith('demo-')) {
     // Demo/sandbox: echo back without DB persistence
@@ -214,6 +222,7 @@ app.put('/api/users/me', async (req: TenantRequest, res) => {
     if (name !== undefined) data.name = String(name)
     if (email !== undefined) data.email = String(email)
     const user = await prisma.user.update({ where: { id: userId }, data })
+    await cache.delete(`user:${userId}`)
     res.json(user)
   } catch (e: any) {
     res.status(500).json({ error: e?.message || 'Failed to update profile' })
@@ -224,6 +233,10 @@ app.put('/api/users/me', async (req: TenantRequest, res) => {
 // TENANTS
 // ============================================================
 app.get('/api/tenants/me', async (req: TenantRequest, res) => {
+  const cache = getCache()
+  const cacheKey = `tenant:${req.tenantId}`
+  const cached = await cache.get<any>(cacheKey)
+  if (cached) return res.json(cached)
   try {
     const tenant = await prisma.tenant.findUnique({
       where: { id: req.tenantId! },
@@ -232,16 +245,21 @@ app.get('/api/tenants/me', async (req: TenantRequest, res) => {
         _count: { select: { users: true, quotes: true, jobs: true, invoices: true } },
       },
     })
-    if (tenant) return res.json(tenant)
+    if (tenant) {
+      await cache.set(cacheKey, tenant, 60)
+      return res.json(tenant)
+    }
   } catch {
     // fall through to demo
   }
-  res.json({
+  const demo = {
     id: req.tenantId || 'tenant-1',
     name: 'Perth Premier Roofing & Plumbing Pty Ltd',
     subscriptionTier: 'EMPIRE_ENTERPRISE_LEASE',
     moduleEntitlements: [],
-  })
+  }
+  await cache.set(cacheKey, demo, 60)
+  res.json(demo)
 })
 
 app.get('/api/tenants', async (_req, res) => {
@@ -257,6 +275,7 @@ app.get('/api/tenants', async (_req, res) => {
 
 app.put('/api/tenants/me', async (req: TenantRequest, res) => {
   const { name, abn, builderRegNumber, plumberLicence, primaryColour, isWhiteLabel, subscriptionTier } = req.body
+  const cache = getCache()
   try {
     const tenant = await prisma.tenant.update({
       where: { id: req.tenantId! },
@@ -270,9 +289,11 @@ app.put('/api/tenants/me', async (req: TenantRequest, res) => {
         ...(subscriptionTier !== undefined ? { subscriptionTier: subscriptionTier as any } : {}),
       },
     })
+    await cache.delete(`tenant:${req.tenantId}`)
     return res.json(tenant)
   } catch {
     // Demo fallback
+    await cache.delete(`tenant:${req.tenantId}`)
     res.json({ id: req.tenantId || 'tenant-1', name: name || 'Perth Premier Roofing & Plumbing Pty Ltd', abn, builderRegNumber, plumberLicence, primaryColour, isWhiteLabel, subscriptionTier: subscriptionTier || 'EMPIRE_ENTERPRISE_LEASE', moduleEntitlements: [] })
   }
 })
@@ -303,21 +324,39 @@ app.post('/api/subscriptions', async (req: TenantRequest, res) => {
 })
 
 app.get('/api/entitlements', async (req: TenantRequest, res) => {
-  const ents = await prisma.moduleEntitlement.findMany({
-    where: { tenantId: req.tenantId! },
-  })
-  res.json(ents)
+  const cache = getCache()
+  const cacheKey = `entitlements:${req.tenantId}`
+  const cached = await cache.get<any>(cacheKey)
+  if (cached) return res.json(cached)
+  try {
+    const ents = await prisma.moduleEntitlement.findMany({
+      where: { tenantId: req.tenantId! },
+    })
+    await cache.set(cacheKey, ents, 60)
+    res.json(ents)
+  } catch {
+    const demo: unknown[] = []
+    await cache.set(cacheKey, demo, 60)
+    res.json(demo)
+  }
 })
 
 app.patch('/api/entitlements/:moduleKey', async (req: TenantRequest, res) => {
   const { moduleKey } = req.params
   const { isEnabled, addOnPrice } = req.body
-  const ent = await prisma.moduleEntitlement.upsert({
-    where: { tenantId_moduleKey: { tenantId: req.tenantId!, moduleKey: moduleKey as any } },
-    update: { isEnabled, addOnPrice: addOnPrice ? parseFloat(addOnPrice) : 0 },
-    create: { tenantId: req.tenantId!, moduleKey: moduleKey as any, isEnabled: !!isEnabled, addOnPrice: addOnPrice ? parseFloat(addOnPrice) : 0 },
-  })
-  res.json(ent)
+  const cache = getCache()
+  try {
+    const ent = await prisma.moduleEntitlement.upsert({
+      where: { tenantId_moduleKey: { tenantId: req.tenantId!, moduleKey: moduleKey as any } },
+      update: { isEnabled, addOnPrice: addOnPrice ? parseFloat(addOnPrice) : 0 },
+      create: { tenantId: req.tenantId!, moduleKey: moduleKey as any, isEnabled: !!isEnabled, addOnPrice: addOnPrice ? parseFloat(addOnPrice) : 0 },
+    })
+    await cache.delete(`entitlements:${req.tenantId}`)
+    res.json(ent)
+  } catch (e: any) {
+    await cache.delete(`entitlements:${req.tenantId}`)
+    res.status(500).json({ error: e?.message || 'Failed to update entitlement' })
+  }
 })
 
 // ============================================================
