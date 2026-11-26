@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { SkeletonTable } from "./Skeleton";
 
 export interface Column<T> {
   key: string;
@@ -21,6 +22,8 @@ interface DataTableProps<T> {
   rowKey?: (row: T) => string;
   /** When true and data is large, render a virtualized scrollable table. */
   virtualize?: boolean;
+  /** Show skeleton loader while data is loading. */
+  loading?: boolean;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -31,6 +34,7 @@ export function DataTable<T extends Record<string, any>>({
   emptyMessage = "No data available",
   rowKey = (row) => String(row.id),
   virtualize = false,
+  loading = false,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -98,6 +102,10 @@ export function DataTable<T extends Record<string, any>>({
       ))}
     </tr>
   );
+
+  if (loading) {
+    return <SkeletonTable rows={5} cols={columns.length} />;
+  }
 
   return (
     <div className="space-y-3">
@@ -202,8 +210,12 @@ export function DataTable<T extends Record<string, any>>({
                 {pageData.map((row) => renderRow(row))}
                 {pageData.length === 0 && (
                   <tr>
-                    <td colSpan={columns.length} className="px-4 py-8 text-center text-[#64748B]">
-                      {emptyMessage}
+                    <td colSpan={columns.length} className="px-4 py-8 text-center">
+                      <div className="flex flex-col items-center gap-2 text-[#64748B]">
+                        <span className="text-2xl">📋</span>
+                        <span className="text-sm">{emptyMessage}</span>
+                        <span className="text-xs">Try adjusting your search or filters</span>
+                      </div>
                     </td>
                   </tr>
                 )}
