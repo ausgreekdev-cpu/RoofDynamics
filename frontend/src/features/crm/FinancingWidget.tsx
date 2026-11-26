@@ -43,7 +43,7 @@ export function FinancingWidget() {
         <CardTitle>Financing Quote</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="space-y-1">
             <Label htmlFor="fin-amount">Amount</Label>
             <Input id="fin-amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />

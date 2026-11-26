@@ -35,7 +35,7 @@ export function ROICalculator() {
             <Input id="roi-cost" type="number" value={inputs.hourlyCost} onChange={(e) => set('hourlyCost', Number(e.target.value))} />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3 p-3 rounded-md border border-[var(--border)]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-md border border-[var(--border)]">
           <div>
             <p className="text-xs text-[var(--muted-foreground)]">Annual saving</p>
             <p className="text-lg font-bold text-[var(--success)]">${result.annualLabourSaving.toFixed(0)}</p>

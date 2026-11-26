@@ -143,7 +143,7 @@ export default function Login() {
           <p className="text-xs text-[#64748B] text-center mb-4">
             Demo credentials: any email / any password
           </p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <div className="p-3 bg-[#0F172A] rounded border border-[#334155] text-center">
               <Building2 className="w-5 h-5 mx-auto mb-1 text-[#0EA5E9]" />
               <p className="text-xs text-[#94A3B8]">CRM & Quoting</p>

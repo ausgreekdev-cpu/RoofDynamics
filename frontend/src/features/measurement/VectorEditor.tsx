@@ -309,7 +309,7 @@ export function VectorEditor() {
             </Button>
           </div>
           {photos.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {photos.map((p, i) => (
                 <img key={i} src={p} alt={`roof-${i}`} className="w-full h-20 object-cover rounded border border-[var(--border)]" />
               ))}

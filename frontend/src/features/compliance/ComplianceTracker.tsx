@@ -161,7 +161,7 @@ export function ComplianceTracker() {
       <Card>
         <CardHeader><CardTitle>Building Permits (BA1 / BA2)</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-3 gap-2 p-3 rounded-md border border-[var(--border)]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 rounded-md border border-[var(--border)]">
             <div className="space-y-1">
               <Label htmlFor="pm-num">Permit #</Label>
               <Input id="pm-num" value={permitForm.permitNumber} onChange={(e) => setPermitForm({ ...permitForm, permitNumber: e.target.value })} />
